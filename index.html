@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0" name="viewport"/>
+  <meta content="web_standard" name="shell-type"/>
+  <title>GitFast - Generador de Comandos Git | Grupo 32</title>
+
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#0f131c",
+            "surface-dim": "#0f131c",
+            "surface-bright": "#353942",
+            "surface-container-lowest": "#0a0e16",
+            "surface-container-low": "#181c24",
+            "surface-container": "#1c2028",
+            "surface-container-high": "#262a33",
+            "surface-container-highest": "#31353e",
+            "on-surface": "#dfe2ee",
+            "on-surface-variant": "#bdc8d1",
+            "inverse-surface": "#dfe2ee",
+            "inverse-on-surface": "#2c3039",
+            "outline": "#87929a",
+            "outline-variant": "#3e484f",
+            "surface-tint": "#7bd0ff",
+            "primary": "#8ed5ff",
+            "on-primary": "#00354a",
+            "primary-container": "#38bdf8",
+            "on-primary-container": "#004965",
+            "secondary": "#4edea3",
+            "on-secondary": "#003824",
+            "secondary-container": "#00a572",
+            "on-secondary-container": "#00311f",
+            "tertiary": "#ffc174",
+            "on-tertiary": "#472a00",
+            "tertiary-container": "#f59e0b",
+            "on-tertiary-container": "#613b00",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "error-container": "#93000a",
+            "on-error-container": "#ffdad6",
+            "background": "#0f131c",
+            "on-background": "#dfe2ee"
+          },
+          fontFamily: {
+            "body": ["Geist", "system-ui", "sans-serif"],
+            "code": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Geist', system-ui, -apple-system, sans-serif;
+    }
+    code, pre, .font-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f131c;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262a33;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .recipe-card.active {
+      background-color: #262a33 !important;
+      border-left: 3px solid #38bdf8;
+    }
+    .recipe-card.active .recipe-title {
+      color: #8ed5ff !important;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+  <!-- CABECERA PRINCIPAL SUPERIOR (RESPONSIVA) -->
+  <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-xl border-b border-outline-variant/30">
+    <!-- Fila 1: Logo, Título, Estado y Equipo -->
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
+      <!-- Marca y Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-container to-secondary flex items-center justify-center text-on-primary shadow-md">
+          <span class="material-symbols-outlined text-[22px]">terminal</span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-lg tracking-tight text-on-surface">GitFast</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-tertiary-container/20 text-tertiary font-code border border-tertiary/30 uppercase font-semibold">Grupo 32</span>
+          </div>
+          <span class="text-[11px] text-on-surface-variant font-code hidden sm:inline">IA Generativa: del Prompt al Producto</span>
+        </div>
+      </div>
+
+      <!-- Estado Seguro y Enlace a Integrantes -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-low text-secondary text-xs font-code border border-secondary/20">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          <span>100% Offline • Cero APIs Privadas</span>
+        </div>
+
+        <button onclick="switchTab('about')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs text-on-surface transition-colors cursor-pointer border border-outline-variant/40" title="Ver integrantes del equipo">
+          <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
+          <span class="font-medium">Equipo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fila 2: Barra de Navegación de Pestañas (Desplazable en móvil) -->
+    <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between overflow-x-auto border-t border-outline-variant/20 py-1">
+      <nav class="flex items-center gap-1 sm:gap-2 whitespace-nowrap" id="main-navigation">
+        <button onclick="switchTab('generator')" id="tab-btn-generator" class="nav-tab active px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-surface-container-high text-primary border-b-2 border-primary">
+          <span class="material-symbols-outlined text-[16px]">code</span>
+          <span>Generador de Comandos</span>
+        </button>
+
+        <button onclick="switchTab('favorites')" id="tab-btn-favorites" class="nav-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+          <span class="material-symbols-outlined text-[16px] text-tertiary">star</span>
+          <span>Favoritos</span>
+          <span id="fav-badge-count" class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-container-highest text-tertiary font-code">0</span>
+        </button>
+
+        <button onclick="switchTab('emergency')" id="tab-btn-emergency" class="nav-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
+          <span class="material-symbols-outlined text-[16px] text-error">sos</span>
+          <span>Guía de Rescate</span>
+        </button>
+      </nav>
+
+      <div class="hidden lg:flex items-center gap-2 text-xs font-code text-on-surface-variant pl-4">
+        <span class="material-symbols-outlined text-[15px] text-secondary">verified_user</span>
+        <span>Modo Seguro Activo</span>
+      </div>
+    </div>
+
+    <!-- Ticker de advertencia de seguridad -->
+    <div class="w-full bg-surface-container-low px-4 sm:px-6 lg:px-8 py-1 flex items-center justify-between border-t border-outline-variant/20 text-[11px] sm:text-xs text-on-surface-variant">
+      <div class="flex items-center gap-1.5 truncate">
+        <span class="material-symbols-outlined text-[14px] text-secondary shrink-0">shield</span>
+        <span class="truncate"><strong class="text-on-surface font-medium">Modo Seguro:</strong> Los comandos no se ejecutan directamente en tu terminal. Copia, inspecciona y pega.</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-3 font-code shrink-0 pl-2">
+        <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 bg-surface-container-highest rounded text-on-surface">Esc</kbd> limpiar</span>
+        <span class="flex items-center gap-1"><kbd class="px-1 py-0.5 bg-surface-container-highest rounded text-on-surface">Ctrl+C</kbd> copiar</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 w-full pt-28 sm:pt-32 pb-12 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: GENERADOR DE COMANDOS (3 COLUMNAS) -->
+    <!-- ========================================== -->
+    <section id="view-generator" class="tab-content active">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- COLUMNA 1: SELECTOR DE CASOS DE USO (4 Cols Desktop) -->
+        <aside class="lg:col-span-4 flex flex-col gap-4">
+          <!-- Caja de Búsqueda de Recetas -->
+          <div class="bg-surface-container-low p-4 rounded-xl flex flex-col gap-2.5 shadow-sm border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <span class="text-xs uppercase tracking-wider text-outline font-semibold font-code">Filtrar Recetas Git</span>
+              <span id="recipe-count-badge" class="px-2 py-0.5 rounded bg-surface-container font-code text-xs text-primary">12 recetas</span>
+            </div>
+            <div class="relative w-full">
+              <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[18px] text-outline">filter_list</span>
+              <input type="text" id="recipe-search-input" oninput="filterRecipes(this.value)" placeholder="Buscar commit, rama, push, revert..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface text-xs sm:text-sm placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30 transition-all"/>
+            </div>
+          </div>
+
+          <!-- Contenedor de Categorías y Tarjetas de Recetas -->
+          <div class="flex flex-col gap-4 max-h-[680px] overflow-y-auto pr-1" id="recipes-catalog-container">
+            <!-- Renderizado dinámico por JS -->
+          </div>
+        </aside>
+
+        <!-- COLUMNA 2: FORMULARIO DE VARIABLES REACTIVAS (4 Cols Desktop) -->
+        <section class="lg:col-span-4 flex flex-col gap-4">
+          <div class="bg-surface-container-low p-4 sm:p-5 rounded-xl flex flex-col gap-4 shadow-sm border border-outline-variant/20">
+            <!-- Encabezado del Formulario -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+                <span class="text-xs uppercase tracking-wider text-outline font-semibold font-code">Variables de Entrada</span>
+              </div>
+              <button onclick="resetRecipeInputs()" type="button" class="text-on-surface-variant hover:text-on-surface font-code text-xs flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-[14px]">restart_alt</span>
+                <span>Limpiar campos</span>
+              </button>
+            </div>
+
+            <!-- Título y Descripción de la Receta Actual -->
+            <div class="flex flex-col gap-1 pb-1 border-b border-outline-variant/20">
+              <div class="flex items-center gap-2">
+                <span id="current-recipe-badge" class="px-2 py-0.5 rounded text-[10px] font-code font-semibold uppercase bg-primary-container/20 text-primary">Recomendado</span>
+                <span id="current-recipe-id" class="text-xs font-code text-on-surface-variant">#push-remote</span>
+              </div>
+              <h2 id="current-recipe-title" class="text-base sm:text-lg font-semibold text-on-surface">Subir cambios a rama remota</h2>
+              <p id="current-recipe-desc" class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">Sincroniza y envía commits locales al repositorio remoto estableciendo el upstream.</p>
+            </div>
+
+            <!-- Campos Dinámicos -->
+            <div class="flex flex-col gap-3.5" id="form-inputs-container">
+
+              <!-- Campo: Rama -->
+              <div class="flex flex-col gap-1" id="field-group-branch">
+                <div class="flex items-center justify-between">
+                  <label for="input-branch" class="text-xs font-semibold text-on-surface flex items-center gap-1.5 font-code">
+                    <span class="material-symbols-outlined text-[15px] text-primary">fork_right</span>
+                    <span>Nombre de la Rama</span>
+                  </label>
+                  <span id="branch-validation-msg" class="text-[11px] font-code text-secondary flex items-center gap-0.5">
+                    <span class="material-symbols-outlined text-[12px]">check_circle</span> Válido
+                  </span>
+                </div>
+                <input type="text" id="input-branch" oninput="onBranchInput(this.value)" value="feature/entrega-grupo32" placeholder="ej: feature/auth-jwt" class="w-full px-3 py-2 rounded-lg bg-surface-container-lowest text-primary font-code text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30"/>
+                <span class="text-[10px] text-on-surface-variant">Se limpian espacios y caracteres inválidos automáticamente.</span>
+              </div>
+
+              <!-- Campo: Repositorio Remoto -->
+              <div class="flex flex-col gap-1" id="field-group-remote">
+                <div class="flex items-center justify-between">
+                  <label for="input-remote" class="text-xs font-semibold text-on-surface flex items-center gap-1.5 font-code">
+                    <span class="material-symbols-outlined text-[15px] text-outline">cloud_upload</span>
+                    <span>Remoto (Remote)</span>
+                  </label>
+                  <span class="text-[10px] font-code text-outline">Por defecto: origin</span>
+                </div>
+                <input type="text" id="input-remote" oninput="updateCommandOutput()" value="origin" placeholder="origin o upstream" class="w-full px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-code text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30"/>
+              </div>
+
+              <!-- Campo: Mensaje de Commit -->
+              <div class="flex flex-col gap-1" id="field-group-message">
+                <div class="flex items-center justify-between">
+                  <label for="input-message" class="text-xs font-semibold text-on-surface flex items-center gap-1.5 font-code">
+                    <span class="material-symbols-outlined text-[15px] text-secondary">commit</span>
+                    <span>Mensaje de Commit Semántico</span>
+                  </label>
+                  <span id="char-counter" class="text-[10px] font-code text-outline">55 caracteres</span>
+                </div>
+                <textarea id="input-message" rows="2" oninput="updateCommandOutput()" placeholder="feat: descripción concisa del cambio" class="w-full px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-code text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30 resize-none">feat: implementación de las 4 funciones según PRD</textarea>
+                <div class="flex items-center gap-1 text-[11px] text-on-surface-variant">
+                  <span class="text-primary font-code">feat:</span> nueva función | <span class="text-secondary font-code">fix:</span> corrección | <span class="text-tertiary font-code">docs:</span> documentación
+                </div>
+              </div>
+
+              <!-- Campo Opcional: Archivo Específico -->
+              <div class="flex flex-col gap-1 hidden" id="field-group-file">
+                <label for="input-file" class="text-xs font-semibold text-on-surface flex items-center gap-1.5 font-code">
+                  <span class="material-symbols-outlined text-[15px] text-tertiary">description</span>
+                  <span>Ruta o Nombre del Archivo</span>
+                </label>
+                <input type="text" id="input-file" oninput="updateCommandOutput()" value="src/index.js" placeholder="ej: index.html o src/app.js" class="w-full px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-code text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30"/>
+              </div>
+
+              <!-- Checkboxes de Flags Opcionales -->
+              <div class="flex flex-col gap-2 pt-2 border-t border-outline-variant/20">
+                <span class="text-xs uppercase tracking-wider text-outline font-semibold font-code">Opciones de Seguridad (Flags)</span>
+
+                <!-- Flag Upstream -u -->
+                <label id="flag-container-upstream" class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer select-none">
+                  <input type="checkbox" id="flag-upstream" checked onchange="updateCommandOutput()" class="mt-0.5 w-4 h-4 rounded text-primary focus:ring-0 bg-surface-container-lowest"/>
+                  <div class="flex flex-col text-xs">
+                    <span class="font-semibold text-on-surface font-code">--set-upstream (-u)</span>
+                    <span class="text-on-surface-variant text-[11px]">Vincula la rama local con GitHub para futuros push rápidos.</span>
+                  </div>
+                </label>
+
+                <!-- Flag Force Lease -->
+                <label id="flag-container-force-lease" class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer select-none">
+                  <input type="checkbox" id="flag-force-lease" onchange="updateCommandOutput()" class="mt-0.5 w-4 h-4 rounded text-tertiary focus:ring-0 bg-surface-container-lowest"/>
+                  <div class="flex flex-col text-xs">
+                    <span class="font-semibold text-tertiary font-code">--force-with-lease (Seguro)</span>
+                    <span class="text-on-surface-variant text-[11px]">Sobreescribe remoto solo si nadie más subió cambios antes.</span>
+                  </div>
+                </label>
+
+                <!-- Flag Git Status -->
+                <label id="flag-container-prestatus" class="flex items-start gap-2.5 p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer select-none">
+                  <input type="checkbox" id="flag-prestatus" checked onchange="updateCommandOutput()" class="mt-0.5 w-4 h-4 rounded text-primary focus:ring-0 bg-surface-container-lowest"/>
+                  <div class="flex flex-col text-xs">
+                    <span class="font-semibold text-on-surface font-code">Inspección previa (git status)</span>
+                    <span class="text-on-surface-variant text-[11px]">Revisa qué archivos han cambiado antes de preparar el commit.</span>
+                  </div>
+                </label>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- COLUMNA 3: VISUALIZADOR TERMINAL Y COPIA CON UN TOQUE (4 Cols Desktop) -->
+        <section class="lg:col-span-4 flex flex-col gap-4">
+          <!-- Ventana de Terminal Simulada -->
+          <div class="bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden shadow-2xl border border-outline-variant/30">
+            <!-- Barra Superior de Terminal -->
+            <div class="bg-surface-container px-3.5 py-2.5 flex items-center justify-between select-none border-b border-outline-variant/20">
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-3 h-3 rounded-full bg-error inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-tertiary-container inline-block"></span>
+                  <span class="w-3 h-3 rounded-full bg-secondary inline-block"></span>
+                </div>
+                <span class="ml-2 font-code text-xs text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">terminal</span>
+                  <span>bash — terminal</span>
+                </span>
+              </div>
+              <div class="flex items-center gap-1.5 font-code text-[11px] text-secondary">
+                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                <span>BUFFER LISTO</span>
+              </div>
+            </div>
+
+            <!-- Contenido de Comandos Generados -->
+            <div class="p-4 font-code text-xs sm:text-sm text-on-surface flex flex-col gap-2 leading-relaxed bg-[#0a0e16] min-h-[160px] overflow-x-auto">
+              <div class="text-outline text-[11px] select-none">
+                # Generado por GitFast • Grupo 32 • Modo Seguro
+              </div>
+              <div class="flex items-center gap-2 text-on-surface-variant text-[11px] select-none">
+                <span class="text-secondary font-semibold">estudiante@lab-u</span><span class="text-outline">:</span><span class="text-primary font-semibold">~/proyecto</span><span class="text-tertiary font-semibold">$</span>
+              </div>
+              <pre id="command-output-block" class="font-code text-primary font-medium m-0 whitespace-pre-wrap select-all"></pre>
+            </div>
+
+            <!-- Botones de Acción Rápida (Copia en 1 toque y Favorito) -->
+            <div class="bg-surface-container-low p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-outline-variant/20">
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <!-- Botón Principal: Copiar Comando con 1 Toque -->
+                <button onclick="copyGeneratedCommands()" id="btn-copy-commands" type="button" class="flex-1 sm:flex-none px-4 py-3 sm:py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px]" id="copy-btn-icon">content_copy</span>
+                  <span id="copy-btn-text">Copiar Comando</span>
+                </button>
+
+                <!-- Botón de Favorito -->
+                <button onclick="toggleCurrentFavorite()" id="btn-toggle-fav" type="button" title="Marcar como favorito" class="px-3 py-3 sm:py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined text-[18px] text-tertiary" id="fav-btn-icon">star_border</span>
+                  <span id="fav-btn-text" class="hidden sm:inline">Guardar</span>
+                </button>
+              </div>
+
+              <!-- Indicador de Estado de Copia -->
+              <div id="copy-status-indicator" class="flex items-center gap-1.5 text-on-surface-variant font-code text-xs">
+                <span class="w-2 h-2 rounded-full bg-outline"></span>
+                <span>Listo para copiar</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Desglose Didáctico para el Estudiante -->
+          <div class="bg-surface-container-low p-4 sm:p-5 rounded-xl flex flex-col gap-3 shadow-sm border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-secondary">school</span>
+                <span class="text-xs uppercase tracking-wider text-outline font-semibold font-code">¿Qué hace cada paso?</span>
+              </div>
+              <span class="text-[10px] font-code text-secondary bg-secondary/10 px-2 py-0.5 rounded">Explicación Didáctica</span>
+            </div>
+            <div id="didactic-steps-container" class="flex flex-col gap-2 text-xs text-on-surface-variant">
+              <!-- Renderizado dinámico según la receta seleccionada -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: FAVORITOS & SNIPPETS GUARDADOS    -->
+    <!-- ========================================== -->
+    <section id="view-favorites" class="tab-content">
+      <div class="flex flex-col gap-6 max-w-5xl mx-auto">
+        <!-- Banner Superior de Favoritos -->
+        <div class="bg-surface-container rounded-xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-outline-variant/20 shadow-lg">
+          <div class="flex flex-col gap-1 max-w-xl">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] bg-secondary-container/20 text-secondary font-code uppercase font-semibold">Almacenamiento Local (LocalStorage)</span>
+              <span class="text-outline text-xs">●</span>
+              <span class="text-xs font-code text-on-surface-variant">Persistente en tu navegador</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-bold text-on-surface tracking-tight">Comandos Favoritos Guardados</h2>
+            <p class="text-xs sm:text-sm text-on-surface-variant">Guarda atajos de uso frecuente para acceder a ellos sin tener que reescribir variables cada vez.</p>
+          </div>
+
+          <!-- Botones de Acción de Favoritos -->
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <button onclick="exportFavoritesScript()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-code transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[16px] text-tertiary">download</span>
+              <span>Exportar .sh</span>
+            </button>
+            <button onclick="clearAllFavorites()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-low hover:bg-error-container/20 text-error text-xs font-code transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+              <span>Limpiar Todos</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros Rápidos de Favoritos -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="relative flex-1 max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline">search</span>
+            <input type="text" id="fav-search-input" oninput="filterFavoritesList(this.value)" placeholder="Buscar en favoritos..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface text-xs sm:text-sm placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30"/>
+          </div>
+          <div class="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0" id="fav-category-chips">
+            <button onclick="setFavoriteFilter('all')" class="fav-filter-chip active px-3 py-1.5 rounded-lg text-xs font-code font-semibold bg-primary text-on-primary" data-cat="all">Todos</button>
+            <button onclick="setFavoriteFilter('commit')" class="fav-filter-chip px-3 py-1.5 rounded-lg text-xs font-code text-on-surface-variant hover:text-on-surface bg-surface-container-low" data-cat="commit">Commit</button>
+            <button onclick="setFavoriteFilter('ramas')" class="fav-filter-chip px-3 py-1.5 rounded-lg text-xs font-code text-on-surface-variant hover:text-on-surface bg-surface-container-low" data-cat="ramas">Ramas</button>
+            <button onclick="setFavoriteFilter('push')" class="fav-filter-chip px-3 py-1.5 rounded-lg text-xs font-code text-on-surface-variant hover:text-on-surface bg-surface-container-low" data-cat="push">Push/Pull</button>
+            <button onclick="setFavoriteFilter('rescate')" class="fav-filter-chip px-3 py-1.5 rounded-lg text-xs font-code text-on-surface-variant hover:text-on-surface bg-surface-container-low" data-cat="rescate">Rescate</button>
+          </div>
+        </div>
+
+        <!-- Lista de Tarjetas de Favoritos -->
+        <div class="flex flex-col gap-4" id="favorites-cards-container">
+          <!-- Renderizado dinámico desde LocalStorage -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: GUÍA DE RESCATE Y EMERGENCIAS     -->
+    <!-- ========================================== -->
+    <section id="view-emergency" class="tab-content">
+      <div class="flex flex-col gap-6 max-w-5xl mx-auto">
+        <!-- Banner de Guía -->
+        <div class="bg-surface-container-low p-5 sm:p-6 rounded-xl flex flex-col gap-2 border border-outline-variant/20 shadow-md">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+            <span class="text-xs uppercase font-code text-error font-semibold tracking-wider">Protocolos de Rescate Git Inmediato</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-on-surface">¿Qué acaba de ocurrir en tu proyecto universitario?</h2>
+          <p class="text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
+            Git rara vez destruye información a menos que ejecutes comandos forzados destructivos. Selecciona tu caso de estrés y sigue los pasos con calma.
+          </p>
+        </div>
+
+        <!-- Bento Grid de Casos de Emergencia -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- Caso 1: Commit en rama equivocada -->
+          <article class="bg-surface-container rounded-xl p-5 flex flex-col gap-3 border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-code bg-tertiary-container/20 text-tertiary font-bold uppercase">Emergencia Común</span>
+              <span class="text-xs font-code text-outline">#RAMA-ERRONEA</span>
+            </div>
+            <h3 class="text-base font-semibold text-on-surface">Hice commit en main/master en vez de mi rama de equipo</h3>
+            <p class="text-xs text-on-surface-variant">Crea la rama correcta desde tu punto actual y luego rebobina main sin tocar tus archivos.</p>
+            <div class="bg-surface-container-lowest p-3 rounded-lg font-code text-xs text-primary leading-relaxed overflow-x-auto">
+              <div><span class="text-secondary">$</span> git checkout -b feature/mi-rama-correcta</div>
+              <div><span class="text-secondary">$</span> git checkout main</div>
+              <div><span class="text-secondary">$</span> git reset --soft HEAD~1</div>
+            </div>
+            <button onclick="loadSnippetIntoGenerator('branch-create', 'feature/mi-rama-correcta', 'origin', 'feat: reubicación de cambios')" class="self-start text-xs font-code text-primary hover:underline flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">tune</span> Abrir en el Generador
+            </button>
+          </article>
+
+          <!-- Caso 2: Push rechazado por cambios ajenos -->
+          <article class="bg-surface-container rounded-xl p-5 flex flex-col gap-3 border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-code bg-primary-container/20 text-primary font-bold uppercase">Sincronización</span>
+              <span class="text-xs font-code text-outline">#PUSH-REJECTED</span>
+            </div>
+            <h3 class="text-base font-semibold text-on-surface">Mi push fue rechazado porque un compañero subió cambios</h3>
+            <p class="text-xs text-on-surface-variant">Nunca hagas force push. Aplica un rebase para montar tus commits limpios sobre los suyos.</p>
+            <div class="bg-surface-container-lowest p-3 rounded-lg font-code text-xs text-primary leading-relaxed overflow-x-auto">
+              <div><span class="text-secondary">$</span> git pull --rebase origin main</div>
+              <div><span class="text-secondary">$</span> git push origin feature/entrega</div>
+            </div>
+            <button onclick="loadSnippetIntoGenerator('pull-rebase', 'main', 'origin', '')" class="self-start text-xs font-code text-primary hover:underline flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">tune</span> Abrir en el Generador
+            </button>
+          </article>
+
+          <!-- Caso 3: Deshacer commit con error sin borrar archivos -->
+          <article class="bg-surface-container rounded-xl p-5 flex flex-col gap-3 border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-code bg-secondary-container/20 text-secondary font-bold uppercase">100% Seguro</span>
+              <span class="text-xs font-code text-outline">#RESET-SOFT</span>
+            </div>
+            <h3 class="text-base font-semibold text-on-surface">Hice commit con error y quiero arreglarlo sin perder código</h3>
+            <p class="text-xs text-on-surface-variant">El parámetro --soft elimina el registro del commit pero mantiene todos tus cambios listos en staging.</p>
+            <div class="bg-surface-container-lowest p-3 rounded-lg font-code text-xs text-primary leading-relaxed overflow-x-auto">
+              <div><span class="text-secondary">$</span> git reset --soft HEAD~1</div>
+              <div><span class="text-secondary">$</span> git status</div>
+            </div>
+            <button onclick="loadSnippetIntoGenerator('reset-soft', 'main', 'origin', '')" class="self-start text-xs font-code text-primary hover:underline flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">tune</span> Abrir en el Generador
+            </button>
+          </article>
+
+          <!-- Caso 4: Guardar código a medio terminar con Stash -->
+          <article class="bg-surface-container rounded-xl p-5 flex flex-col gap-3 border border-outline-variant/20">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-code bg-tertiary-container/20 text-tertiary font-bold uppercase">Bolsillo Temporal</span>
+              <span class="text-xs font-code text-outline">#GIT-STASH</span>
+            </div>
+            <h3 class="text-base font-semibold text-on-surface">Tengo código a medias y necesito cambiar de rama ya</h3>
+            <p class="text-xs text-on-surface-variant">Guarda tus modificaciones en una gaveta temporal para dejar tu área de trabajo limpia.</p>
+            <div class="bg-surface-container-lowest p-3 rounded-lg font-code text-xs text-primary leading-relaxed overflow-x-auto">
+              <div><span class="text-secondary">$</span> git stash save "wip: cambios parciales"</div>
+              <div><span class="text-secondary">$</span> git checkout otra-rama</div>
+              <div><span class="text-secondary">$</span> git stash pop</div>
+            </div>
+            <button onclick="loadSnippetIntoGenerator('stash-save', 'main', 'origin', 'wip: cambios temporales')" class="self-start text-xs font-code text-primary hover:underline flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">tune</span> Abrir en el Generador
+            </button>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: ACERCA DE / EQUIPO GRUPO 32       -->
+    <!-- ========================================== -->
+    <section id="view-about" class="tab-content">
+      <div class="flex flex-col gap-6 max-w-4xl mx-auto">
+        <div class="bg-surface-container rounded-xl p-6 sm:p-8 flex flex-col gap-5 border border-outline-variant/20 shadow-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-container to-secondary flex items-center justify-center text-on-primary">
+              <span class="material-symbols-outlined text-[28px]">code_blocks</span>
+            </div>
+            <div>
+              <h2 class="text-xl sm:text-2xl font-bold text-on-surface">GitFast • Grupo [32]</h2>
+              <p class="text-xs sm:text-sm text-on-surface-variant font-code">Electiva: IA Generativa: del Prompt al Producto</p>
+            </div>
+          </div>
+
+          <div class="border-t border-outline-variant/20 pt-4 flex flex-col gap-3">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-primary font-code">Integrantes del Equipo</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/20 flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">person</span>
+                <span class="text-sm font-medium text-on-surface">Camilo Andres Blanco Solano</span>
+              </div>
+              <div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/20 flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">person</span>
+                <span class="text-sm font-medium text-on-surface">Santiago Chacón Montañez</span>
+              </div>
+              <div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/20 flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">person</span>
+                <span class="text-sm font-medium text-on-surface">Santiago Ochoa Paipilla</span>
+              </div>
+              <div class="p-3 rounded-lg bg-surface-container-lowest border border-outline-variant/20 flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">person</span>
+                <span class="text-sm font-medium text-on-surface">Sergio Andrés Rondon Borda</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-outline-variant/20 pt-4 flex flex-col gap-2 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-secondary font-code">Alcance y Cumplimiento del PRD</h3>
+            <p>
+              Esta aplicación atiende la necesidad de los estudiantes universitarios de contar con comandos Git seguros y precisos antes de la entrega de proyectos, previniendo la pérdida accidental de archivos.
+            </p>
+            <ul class="list-disc list-inside space-y-1 pt-1 text-xs font-code">
+              <li><strong class="text-on-surface">Función 1:</strong> Selección de casos de uso comunes organizados por categorías.</li>
+              <li><strong class="text-on-surface">Función 2:</strong> Inserción de variables personalizadas (ramas, mensajes, remotos).</li>
+              <li><strong class="text-on-surface">Función 3:</strong> Generación en tiempo real y copiado al portapapeles en 1 toque.</li>
+              <li><strong class="text-on-surface">Función 4:</strong> Lista de favoritos guardada en memoria local del navegador.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="w-full bg-surface-container-lowest py-5 border-t border-outline-variant/20 text-xs text-on-surface-variant">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-on-surface">GitFast</span>
+        <span>•</span>
+        <span>Asistente de Control de Versiones Estudiantil</span>
+      </div>
+      <div class="flex items-center gap-3 font-code text-[11px]">
+        <span>Grupo [32]</span>
+        <span>•</span>
+        <a href="https://github.com/schaconml/repo-agente-IA" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center gap-1">
+          <span>GitHub Repo</span>
+          <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: LÓGICA DE LAS 4 FUNCIONES Y NAVEGACIÓN       -->
+  <!-- ======================================================== -->
+  <script>
+    // ----------------------------------------------------
+    // BASE DE DATOS DE RECETAS GIT (FUNCIÓN 1 DEL PRD)
+    // ----------------------------------------------------
+    const GIT_RECIPES = [
+      // CATEGORÍA 1: Subir y Sincronizar Remoto (Frecuente)
+      {
+        id: 'push-remote',
+        category: 'Subir y Sincronizar Remoto',
+        categoryKey: 'push',
+        title: 'Subir cambios a rama remota',
+        desc: 'Envía los commits locales a GitHub configurando el upstream.',
+        badge: 'Recomendado',
+        badgeColor: 'primary',
+        commandSummary: 'git push -u origin [rama]',
+        fields: { branch: true, remote: true, message: true, file: false },
+        flags: { upstream: true, forceLease: true, prestatus: true },
+        didactic: [
+          { cmd: 'git status', why: 'Verifica los archivos modificados antes de tocar nada.' },
+          { cmd: 'git add .', why: 'Prepara todos los archivos modificados para el commit.' },
+          { cmd: 'git commit -m "..."', why: 'Guarda una instantánea con tu mensaje explicativo.' },
+          { cmd: 'git push -u origin [rama]', why: 'Sube tu rama a GitHub y la vincula para el futuro.' }
+        ],
+        generate: (v, f) => {
+          let list = [];
+          if (f.prestatus) list.push('<span class="text-outline">git status</span>');
+          list.push('<span class="text-secondary">git add .</span>');
+          list.push(`<span class="text-on-surface">git commit -m</span> <span class="text-tertiary">"${v.cleanMsg}"</span>`);
+          let push = `<span class="text-primary font-semibold">git push</span>`;
+          if (f.upstream) push += ` <span class="text-primary-container font-semibold">-u</span>`;
+          if (f.forceLease) push += ` <span class="text-tertiary font-semibold">--force-with-lease</span>`;
+          push += ` <span class="text-on-surface">${v.cleanRemote}</span> <span class="text-primary font-semibold">${v.cleanBranch}</span>`;
+          list.push(push);
+          return list;
+        }
+      },
+      {
+        id: 'pull-rebase',
+        category: 'Subir y Sincronizar Remoto',
+        categoryKey: 'push',
+        title: 'Actualizar local con rebase limpio',
+        desc: 'Descarga cambios de compañeros sin crear commits feos de merge.',
+        badge: 'Limpio',
+        badgeColor: 'secondary',
+        commandSummary: 'git pull --rebase origin main',
+        fields: { branch: true, remote: true, message: false, file: false },
+        flags: { prestatus: true },
+        didactic: [
+          { cmd: 'git fetch origin', why: 'Consulta los commits remotos sin alterar tus archivos.' },
+          { cmd: 'git pull --rebase origin [rama]', why: 'Coloca tus commits encima de los nuevos de forma lineal.' }
+        ],
+        generate: (v, f) => {
+          let list = [];
+          if (f.prestatus) list.push('<span class="text-outline">git status</span>');
+          list.push(`<span class="text-primary font-semibold">git pull --rebase</span> <span class="text-on-surface">${v.cleanRemote}</span> <span class="text-secondary">${v.cleanBranch}</span>`);
+          return list;
+        }
+      },
+      {
+        id: 'push-force-lease',
+        category: 'Subir y Sincronizar Remoto',
+        categoryKey: 'push',
+        title: 'Forzar push seguro (--force-with-lease)',
+        desc: 'Sobreescribe la historia remota SOLO si nadie más ha subido commits.',
+        badge: 'Uso Cuidadoso',
+        badgeColor: 'tertiary',
+        commandSummary: 'git push --force-with-lease origin [rama]',
+        fields: { branch: true, remote: true, message: false, file: false },
+        flags: { prestatus: false },
+        didactic: [
+          { cmd: 'git fetch origin', why: 'Actualiza el espejo local de lo que hay en GitHub.' },
+          { cmd: 'git push --force-with-lease ...', why: 'Protege contra sobreescrituras accidentales de compañeros.' }
+        ],
+        generate: (v) => [
+          '<span class="text-outline">git fetch origin</span>',
+          `<span class="text-tertiary font-semibold">git push --force-with-lease</span> <span class="text-on-surface">${v.cleanRemote}</span> <span class="text-primary">${v.cleanBranch}</span>`
+        ]
+      },
+
+      // CATEGORÍA 2: Guardar y Commitear
+      {
+        id: 'commit-normal',
+        category: 'Guardar y Commitear',
+        categoryKey: 'commit',
+        title: 'Staging y Commit Semántico',
+        desc: 'Agrega cambios y crea un commit con mensaje estructurado.',
+        badge: 'Básico',
+        badgeColor: 'secondary',
+        commandSummary: 'git add . && git commit -m "..."',
+        fields: { branch: false, remote: false, message: true, file: false },
+        flags: { prestatus: true },
+        didactic: [
+          { cmd: 'git add .', why: 'Alista todos los archivos nuevos y editados.' },
+          { cmd: 'git commit -m "..."', why: 'Crea el punto de control local con tu descripción.' }
+        ],
+        generate: (v, f) => {
+          let list = [];
+          if (f.prestatus) list.push('<span class="text-outline">git status</span>');
+          list.push('<span class="text-secondary">git add .</span>');
+          list.push(`<span class="text-on-surface">git commit -m</span> <span class="text-tertiary">"${v.cleanMsg}"</span>`);
+          return list;
+        }
+      },
+      {
+        id: 'commit-amend',
+        category: 'Guardar y Commitear',
+        categoryKey: 'commit',
+        title: 'Modificar mensaje del último commit',
+        desc: 'Corrige el texto del commit más reciente sin crear uno nuevo.',
+        badge: 'Corrección',
+        badgeColor: 'tertiary',
+        commandSummary: 'git commit --amend -m "..."',
+        fields: { branch: false, remote: false, message: true, file: false },
+        flags: { prestatus: false },
+        didactic: [
+          { cmd: 'git commit --amend -m "..."', why: 'Reemplaza el mensaje del último commit localmente.' }
+        ],
+        generate: (v) => [
+          `<span class="text-on-surface">git commit --amend -m</span> <span class="text-tertiary">"${v.cleanMsg}"</span>`
+        ]
+      },
+
+      // CATEGORÍA 3: Ramas y Checkout
+      {
+        id: 'branch-create',
+        category: 'Ramas y Checkout',
+        categoryKey: 'ramas',
+        title: 'Crear y cambiar a nueva rama',
+        desc: 'Crea un ramal de trabajo independiente a partir del código actual.',
+        badge: 'Flujo de Trabajo',
+        badgeColor: 'primary',
+        commandSummary: 'git checkout -b [rama]',
+        fields: { branch: true, remote: false, message: false, file: false },
+        flags: { prestatus: true },
+        didactic: [
+          { cmd: 'git checkout -b [rama]', why: 'Crea la rama y te posiciona dentro de ella de inmediato.' },
+          { cmd: 'git status', why: 'Confirma que estás parado sobre la nueva rama limpia.' }
+        ],
+        generate: (v, f) => {
+          let list = [`<span class="text-primary font-semibold">git checkout -b</span> <span class="text-secondary font-semibold">${v.cleanBranch}</span>`];
+          if (f.prestatus) list.push('<span class="text-outline">git status</span>');
+          return list;
+        }
+      },
+      {
+        id: 'switch-branch',
+        category: 'Ramas y Checkout',
+        categoryKey: 'ramas',
+        title: 'Cambiar a rama existente (switch)',
+        desc: 'Salta a otra rama ya creada en tu copia local.',
+        badge: 'Navegación',
+        badgeColor: 'secondary',
+        commandSummary: 'git switch [rama]',
+        fields: { branch: true, remote: false, message: false, file: false },
+        flags: {},
+        didactic: [
+          { cmd: 'git switch [rama]', why: 'Cambia de contexto a la rama indicada sin modificarla.' }
+        ],
+        generate: (v) => [`<span class="text-primary font-semibold">git switch</span> <span class="text-secondary font-semibold">${v.cleanBranch}</span>`]
+      },
+      {
+        id: 'branch-delete',
+        category: 'Ramas y Checkout',
+        categoryKey: 'ramas',
+        title: 'Eliminar rama local ya integrada',
+        desc: 'Borra de tu máquina una rama cuyos cambios ya se unieron a main.',
+        badge: 'Limpieza',
+        badgeColor: 'outline',
+        commandSummary: 'git branch -d [rama]',
+        fields: { branch: true, remote: false, message: false, file: false },
+        flags: {},
+        didactic: [
+          { cmd: 'git branch -d [rama]', why: 'Elimina de forma segura la rama sólo si ya fue fusionada.' }
+        ],
+        generate: (v) => [`<span class="text-error font-semibold">git branch -d</span> <span class="text-on-surface">${v.cleanBranch}</span>`]
+      },
+
+      // CATEGORÍA 4: Deshacer y Rescate
+      {
+        id: 'reset-soft',
+        category: 'Deshacer y Rescate',
+        categoryKey: 'rescate',
+        title: 'Deshacer commit sin perder cambios (--soft)',
+        desc: 'Elimina el commit pero deja tus archivos intactos listos para corregir.',
+        badge: '100% Seguro',
+        badgeColor: 'secondary',
+        commandSummary: 'git reset --soft HEAD~1',
+        fields: { branch: false, remote: false, message: false, file: false },
+        flags: {},
+        didactic: [
+          { cmd: 'git reset --soft HEAD~1', why: 'Borra el último commit del historial pero conserva tus modificaciones intactas.' },
+          { cmd: 'git status', why: 'Verás tus archivos listos en staging para hacerles commit de nuevo.' }
+        ],
+        generate: () => [
+          '<span class="text-tertiary font-semibold">git reset --soft HEAD~1</span>',
+          '<span class="text-outline">git status</span>'
+        ]
+      },
+      {
+        id: 'stash-save',
+        category: 'Deshacer y Rescate',
+        categoryKey: 'rescate',
+        title: 'Guardar cambios en Stash temporal',
+        desc: 'Guarda en un bolsillo temporal tus cambios para limpiar tu espacio de trabajo.',
+        badge: 'Bolsillo',
+        badgeColor: 'tertiary',
+        commandSummary: 'git stash save "..." && git stash pop',
+        fields: { branch: false, remote: true, message: true, file: false },
+        flags: {},
+        didactic: [
+          { cmd: 'git stash save "..."', why: 'Empaca tus cambios incompletos en una gaveta oculta.' },
+          { cmd: 'git pull origin main', why: 'Sincroniza con GitHub sin tropezar con tus cambios locales.' },
+          { cmd: 'git stash pop', why: 'Desempaca tus cambios y los devuelve a tus archivos.' }
+        ],
+        generate: (v) => [
+          `<span class="text-secondary font-semibold">git stash save</span> <span class="text-tertiary">"${v.cleanMsg}"</span>`,
+          `<span class="text-primary">git pull ${v.cleanRemote} main</span>`,
+          '<span class="text-secondary font-semibold">git stash pop</span>'
+        ]
+      },
+      {
+        id: 'restore-staged',
+        category: 'Deshacer y Rescate',
+        categoryKey: 'rescate',
+        title: 'Sacar archivo de Staging (Unstage)',
+        desc: 'Remueve un archivo agregado por error con git add sin borrar su contenido.',
+        badge: 'Quirúrgico',
+        badgeColor: 'secondary',
+        commandSummary: 'git restore --staged [archivo]',
+        fields: { branch: false, remote: false, message: false, file: true },
+        flags: {},
+        didactic: [
+          { cmd: 'git restore --staged [archivo]', why: 'Quita el archivo de la lista del próximo commit sin alterar lo que escribiste.' }
+        ],
+        generate: (v) => [
+          `<span class="text-tertiary font-semibold">git restore --staged</span> <span class="text-on-surface font-semibold">${v.cleanFile}</span>`
+        ]
+      },
+      {
+        id: 'log-graph',
+        category: 'Deshacer y Rescate',
+        categoryKey: 'rescate',
+        title: 'Ver árbol visual de ramas y commits',
+        desc: 'Muestra un diagrama ASCII con colores de todas las ramas del proyecto.',
+        badge: 'Auditoría',
+        badgeColor: 'primary',
+        commandSummary: 'git log --oneline --graph --decorate --all',
+        fields: { branch: false, remote: false, message: false, file: false },
+        flags: {},
+        didactic: [
+          { cmd: 'git log --oneline --graph...', why: 'Dibuja un mapa visual de dónde están las ramas del equipo.' }
+        ],
+        generate: () => [
+          '<span class="text-primary font-semibold">git log --oneline --graph --decorate --all</span>'
+        ]
+      }
+    ];
+
+    // Estado global de la aplicación
+    let currentRecipe = GIT_RECIPES[0];
+    let favoritesList = [];
+
+    // ----------------------------------------------------
+    // INICIALIZACIÓN AL CARGAR LA PÁGINA
+    // ----------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFavoritesFromStorage();
+      renderRecipesCatalog();
+      selectRecipe(GIT_RECIPES[0].id);
+      renderFavoritesView();
+
+      // Atajos de teclado rápidos
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !window.getSelection().toString()) {
+          copyGeneratedCommands();
+        }
+        if (e.key === 'Escape') {
+          resetRecipeInputs();
+        }
+      });
+    });
+
+    // ----------------------------------------------------
+    // FUNCIÓN 1: SELECCIÓN Y FILTRADO DE CASOS DE USO
+    // ----------------------------------------------------
+    function renderRecipesCatalog(filterText = '') {
+      const container = document.getElementById('recipes-catalog-container');
+      const search = filterText.toLowerCase().trim();
+
+      // Agrupar por categoría
+      const categories = {};
+      GIT_RECIPES.forEach(r => {
+        if (search && !r.title.toLowerCase().includes(search) && !r.desc.toLowerCase().includes(search) && !r.commandSummary.toLowerCase().includes(search)) {
+          return;
+        }
+        if (!categories[r.category]) categories[r.category] = [];
+        categories[r.category].push(r);
+      });
+
+      let totalCount = 0;
+      let html = '';
+
+      for (const [catName, list] of Object.entries(categories)) {
+        totalCount += list.length;
+        html += `
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-[11px] font-code font-semibold uppercase text-outline tracking-wider">${catName}</span>
+              <span class="px-1.5 py-0.2 rounded bg-surface-container font-code text-[10px] text-on-surface-variant">${list.length}</span>
+            </div>
+            <div class="flex flex-col gap-1.5">
+        `;
+
+        list.forEach(item => {
+          const isActive = currentRecipe && currentRecipe.id === item.id;
+          html += `
+            <button onclick="selectRecipe('${item.id}')" type="button" class="recipe-card text-left p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex flex-col gap-1 border border-outline-variant/15 shadow-sm ${isActive ? 'active' : ''}" data-id="${item.id}">
+              <div class="flex items-center justify-between w-full">
+                <span class="recipe-title text-xs sm:text-sm font-medium text-on-surface group-hover:text-primary transition-colors">${item.title}</span>
+                <span class="material-symbols-outlined text-[15px] text-outline group-hover:text-primary transition-colors">arrow_forward</span>
+              </div>
+              <span class="font-code text-[11px] text-on-surface-variant truncate">${item.commandSummary}</span>
+            </button>
+          `;
+        });
+
+        html += `</div></div>`;
+      }
+
+      if (totalCount === 0) {
+        html = `<div class="p-4 text-center text-xs font-code text-on-surface-variant bg-surface-container-lowest rounded-lg">No se encontraron recetas con "${filterText}".</div>`;
+      }
+
+      container.innerHTML = html;
+      document.getElementById('recipe-count-badge').textContent = `${totalCount} recetas`;
+    }
+
+    function filterRecipes(text) {
+      renderRecipesCatalog(text);
+    }
+
+    function selectRecipe(recipeId) {
+      const found = GIT_RECIPES.find(r => r.id === recipeId);
+      if (!found) return;
+
+      currentRecipe = found;
+
+      // Actualizar clases activas en el menú lateral
+      document.querySelectorAll('.recipe-card').forEach(el => {
+        if (el.dataset.id === recipeId) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+
+      // Actualizar tarjeta del formulario
+      document.getElementById('current-recipe-id').textContent = `#${found.id}`;
+      document.getElementById('current-recipe-title').textContent = found.title;
+      document.getElementById('current-recipe-desc').textContent = found.desc;
+
+      const badge = document.getElementById('current-recipe-badge');
+      badge.textContent = found.badge;
+
+      // Mostrar u ocultar campos según la receta
+      toggleField('field-group-branch', found.fields.branch);
+      toggleField('field-group-remote', found.fields.remote);
+      toggleField('field-group-message', found.fields.message);
+      toggleField('field-group-file', found.fields.file);
+
+      // Mostrar u ocultar flags relevantes
+      toggleField('flag-container-upstream', !!found.flags.upstream);
+      toggleField('flag-container-force-lease', !!found.flags.forceLease);
+      toggleField('flag-container-prestatus', typeof found.flags.prestatus !== 'undefined');
+
+      // Actualizar estado de favoritos
+      updateFavButtonState();
+
+      // Regenerar salida
+      updateCommandOutput();
+      renderDidacticSteps(found.didactic);
+    }
+
+    function toggleField(elemId, show) {
+      const el = document.getElementById(elemId);
+      if (el) {
+        if (show) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      }
+    }
+
+    // ----------------------------------------------------
+    // FUNCIÓN 2: VARIABLES PERSONALIZADAS Y SANITIZACIÓN
+    // ----------------------------------------------------
+    function sanitizeBranchName(raw) {
+      // Reglas de git: sin espacios, sin comillas, minúsculas con guiones
+      return (raw || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s\t\n]+/g, '-')
+        .replace(/[^a-z0-9\-_./]/g, '')
+        .replace(/-+/g, '-');
+    }
+
+    function onBranchInput(val) {
+      const sanitized = sanitizeBranchName(val);
+      const msg = document.getElementById('branch-validation-msg');
+      if (val !== sanitized && val.trim().length > 0) {
+        msg.innerHTML = '<span class="material-symbols-outlined text-[12px] text-tertiary">warning</span> Normalizado';
+        msg.className = 'text-[11px] font-code text-tertiary flex items-center gap-0.5';
+      } else {
+        msg.innerHTML = '<span class="material-symbols-outlined text-[12px] text-secondary">check_circle</span> Válido';
+        msg.className = 'text-[11px] font-code text-secondary flex items-center gap-0.5';
+      }
+      updateCommandOutput();
+    }
+
+    function resetRecipeInputs() {
+      document.getElementById('input-branch').value = 'feature/entrega-grupo32';
+      document.getElementById('input-remote').value = 'origin';
+      document.getElementById('input-message').value = 'feat: actualización de componentes';
+      document.getElementById('input-file').value = 'src/index.js';
+      const up = document.getElementById('flag-upstream');
+      if (up) up.checked = true;
+      const fl = document.getElementById('flag-force-lease');
+      if (fl) fl.checked = false;
+      const ps = document.getElementById('flag-prestatus');
+      if (ps) ps.checked = true;
+      updateCommandOutput();
+    }
+
+    // ----------------------------------------------------
+    // FUNCIÓN 3: GENERACIÓN EN TIEMPO REAL Y COPIADO EN 1 TOQUE
+    // ----------------------------------------------------
+    function getCleanVariables() {
+      const rawBranch = document.getElementById('input-branch').value;
+      const cleanBranch = sanitizeBranchName(rawBranch) || 'main';
+      const cleanRemote = (document.getElementById('input-remote').value || 'origin').trim();
+      const rawMsg = document.getElementById('input-message').value || 'chore: actualización';
+      const cleanMsg = rawMsg.replace(/"/g, '\\"');
+      const cleanFile = (document.getElementById('input-file').value || 'src/app.js').trim();
+
+      document.getElementById('char-counter').textContent = `${cleanMsg.length} caracteres`;
+
+      const flags = {
+        upstream: document.getElementById('flag-upstream')?.checked || false,
+        forceLease: document.getElementById('flag-force-lease')?.checked || false,
+        prestatus: document.getElementById('flag-prestatus')?.checked || false
+      };
+
+      return { vars: { cleanBranch, cleanRemote, cleanMsg, cleanFile }, flags };
+    }
+
+    function updateCommandOutput() {
+      if (!currentRecipe) return;
+      const { vars, flags } = getCleanVariables();
+      const lines = currentRecipe.generate(vars, flags);
+      document.getElementById('command-output-block').innerHTML = lines.join('\n');
+    }
+
+    function renderDidacticSteps(steps = []) {
+      const container = document.getElementById('didactic-steps-container');
+      if (!steps || steps.length === 0) {
+        container.innerHTML = '<span class="text-outline text-xs">Sin pasos adicionales.</span>';
+        return;
+      }
+
+      let html = '';
+      steps.forEach((s, i) => {
+        html += `
+          <div class="flex items-start gap-2 p-2 rounded bg-surface-container-lowest border border-outline-variant/15">
+            <span class="w-4 h-4 rounded-full bg-surface-container-high text-primary font-code text-[10px] flex items-center justify-center shrink-0 mt-0.5">${i + 1}</span>
+            <div class="flex flex-col gap-0.5">
+              <code class="font-code text-[11px] text-primary font-semibold">${s.cmd}</code>
+              <p class="text-[11px] text-on-surface-variant leading-tight">${s.why}</p>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // Copiar al portapapeles con 1 toque
+    function copyGeneratedCommands() {
+      const outputElem = document.getElementById('command-output-block');
+      const textToCopy = outputElem.innerText || outputElem.textContent;
+
+      const fallbackCopy = (text) => {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(showCopySuccess).catch(() => {
+          fallbackCopy(textToCopy);
+          showCopySuccess();
+        });
+      } else {
+        fallbackCopy(textToCopy);
+        showCopySuccess();
+      }
+    }
+
+    function showCopySuccess() {
+      const icon = document.getElementById('copy-btn-icon');
+      const text = document.getElementById('copy-btn-text');
+      const indicator = document.getElementById('copy-status-indicator');
+
+      icon.textContent = 'check';
+      text.textContent = '¡Copiado!';
+      indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span><span class="text-secondary font-semibold">¡Copiado al portapapeles!</span>';
+
+      setTimeout(() => {
+        icon.textContent = 'content_copy';
+        text.textContent = 'Copiar Comando';
+        indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-outline"></span><span>Listo para copiar</span>';
+      }, 2000);
+    }
+
+    // ----------------------------------------------------
+    // FUNCIÓN 4: SISTEMA DE FAVORITOS (LOCALSTORAGE)
+    // ----------------------------------------------------
+    const STORAGE_KEY = 'gitfast_favorites_v1';
+
+    // Lista por defecto de emergencia si no hay nada guardado
+    const DEFAULT_FAVORITES = [
+      {
+        id: 'fav-pull-rebase-default',
+        recipeId: 'pull-rebase',
+        title: 'Pull limpio con Rebase (Evitar merge commits antes de entregar)',
+        category: 'push',
+        categoryLabel: 'Push/Pull',
+        code: 'git stash\ngit pull --rebase origin main\ngit stash pop',
+        explanation: 'Guarda cambios en stash, sincroniza el repo de forma limpia y restaura tus modificaciones.',
+        branch: 'main',
+        remote: 'origin'
+      },
+      {
+        id: 'fav-reset-soft-default',
+        recipeId: 'reset-soft',
+        title: 'Deshacer último commit erróneo manteniendo archivos intactos',
+        category: 'rescate',
+        categoryLabel: 'Rollback',
+        code: 'git reset --soft HEAD~1',
+        explanation: 'Elimina el commit erróneo pero deja tu código en staging sin borrar ni una línea.',
+        branch: '',
+        remote: 'origin'
+      },
+      {
+        id: 'fav-log-graph-default',
+        recipeId: 'log-graph',
+        title: 'Árbol visual de ramas del equipo en la consola',
+        category: 'ramas',
+        categoryLabel: 'Ramas',
+        code: 'git log --oneline --graph --decorate --all',
+        explanation: 'Dibuja el mapa de divergencia de ramas para saber dónde quedó cada cambio.',
+        branch: '',
+        remote: 'origin'
+      }
+    ];
+
+    function loadFavoritesFromStorage() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          favoritesList = JSON.parse(stored);
+        } else {
+          favoritesList = [...DEFAULT_FAVORITES];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(favoritesList));
+        }
+      } catch (e) {
+        favoritesList = [...DEFAULT_FAVORITES];
+      }
+      updateFavBadgeCount();
+    }
+
+    function saveFavoritesToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(favoritesList));
+      } catch (e) {
+        console.error('Error guardando en localStorage', e);
+      }
+      updateFavBadgeCount();
+    }
+
+    function updateFavBadgeCount() {
+      const badge = document.getElementById('fav-badge-count');
+      if (badge) badge.textContent = favoritesList.length;
+    }
+
+    function isCurrentRecipeFavorite() {
+      if (!currentRecipe) return false;
+      return favoritesList.some(f => f.recipeId === currentRecipe.id);
+    }
+
+    function updateFavButtonState() {
+      const icon = document.getElementById('fav-btn-icon');
+      const text = document.getElementById('fav-btn-text');
+      if (isCurrentRecipeFavorite()) {
+        icon.textContent = 'star';
+        icon.className = 'material-symbols-outlined text-[18px] text-tertiary font-bold';
+        if (text) text.textContent = 'Guardado';
+      } else {
+        icon.textContent = 'star_border';
+        icon.className = 'material-symbols-outlined text-[18px] text-tertiary';
+        if (text) text.textContent = 'Guardar';
+      }
+    }
+
+    function toggleCurrentFavorite() {
+      if (!currentRecipe) return;
+      const { vars } = getCleanVariables();
+      const outputElem = document.getElementById('command-output-block');
+      const currentCode = outputElem.innerText || outputElem.textContent;
+
+      const existingIndex = favoritesList.findIndex(f => f.recipeId === currentRecipe.id);
+
+      if (existingIndex >= 0) {
+        favoritesList.splice(existingIndex, 1);
+      } else {
+        favoritesList.unshift({
+          id: 'fav-' + Date.now(),
+          recipeId: currentRecipe.id,
+          title: currentRecipe.title,
+          category: currentRecipe.categoryKey || 'general',
+          categoryLabel: currentRecipe.category,
+          code: currentCode,
+          explanation: currentRecipe.desc,
+          branch: vars.cleanBranch,
+          remote: vars.cleanRemote,
+          message: vars.cleanMsg
+        });
+      }
+
+      saveFavoritesToStorage();
+      updateFavButtonState();
+      renderFavoritesView();
+    }
+
+    let activeFavFilter = 'all';
+
+    function setFavoriteFilter(category) {
+      activeFavFilter = category;
+      document.querySelectorAll('.fav-filter-chip').forEach(btn => {
+        if (btn.dataset.cat === category) {
+          btn.classList.add('bg-primary', 'text-on-primary', 'font-semibold');
+          btn.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
+        } else {
+          btn.classList.remove('bg-primary', 'text-on-primary', 'font-semibold');
+          btn.classList.add('bg-surface-container-low', 'text-on-surface-variant');
+        }
+      });
+      renderFavoritesView();
+    }
+
+    function filterFavoritesList(search) {
+      renderFavoritesView(search);
+    }
+
+    function renderFavoritesView(search = '') {
+      const container = document.getElementById('favorites-cards-container');
+      if (!container) return;
+
+      const q = (search || '').toLowerCase().trim();
+
+      const filtered = favoritesList.filter(item => {
+        const matchesCat = (activeFavFilter === 'all') || (item.category === activeFavFilter);
+        const matchesQuery = !q || item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.explanation.toLowerCase().includes(q);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-surface-container p-8 rounded-xl text-center flex flex-col items-center justify-center gap-3 border border-outline-variant/20">
+            <span class="material-symbols-outlined text-[36px] text-outline">star_border</span>
+            <p class="text-sm text-on-surface font-semibold">No hay comandos guardados con este criterio.</p>
+            <p class="text-xs text-on-surface-variant">Puedes agregar cualquiera desde la pestaña "Generador de Comandos" usando el botón de estrella.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(fav => {
+        html += `
+          <article class="bg-surface-container rounded-xl p-4 sm:p-5 flex flex-col gap-3 border border-outline-variant/20 shadow-md">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-code bg-primary-container/15 text-primary font-semibold uppercase">${fav.categoryLabel || 'Snippet'}</span>
+                  <span class="text-xs font-code text-outline">Guardado local</span>
+                </div>
+                <h3 class="text-sm sm:text-base font-semibold text-on-surface">${fav.title}</h3>
+              </div>
+              <button onclick="removeFavorite('${fav.id}')" type="button" class="p-1.5 rounded hover:bg-surface-container-highest text-tertiary transition-colors" title="Eliminar de favoritos">
+                <span class="material-symbols-outlined text-[20px]">star</span>
+              </button>
+            </div>
+
+            <!-- Código del Snippet -->
+            <div class="bg-surface-container-lowest p-3 rounded-lg flex flex-col gap-1 font-code text-xs text-primary leading-relaxed overflow-x-auto border border-outline-variant/10">
+              <pre class="m-0 select-all whitespace-pre-wrap">${fav.code}</pre>
+            </div>
+
+            <!-- Explicación -->
+            <p class="text-xs text-on-surface-variant leading-relaxed">${fav.explanation}</p>
+
+            <!-- Acciones de la Tarjeta -->
+            <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20 flex-wrap gap-2">
+              <button onclick="loadSnippetIntoGenerator('${fav.recipeId}', '${fav.branch || ''}', '${fav.remote || 'origin'}', '${fav.message || ''}')" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-code text-xs transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-[15px] text-primary">tune</span>
+                <span>Abrir en Generador</span>
+              </button>
+
+              <button onclick="copySnippetText(this, ${JSON.stringify(fav.code)})" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary font-code text-xs font-semibold transition-all cursor-pointer shadow-sm">
+                <span class="material-symbols-outlined text-[15px]">content_copy</span>
+                <span class="btn-copy-label">Copiar Snippet</span>
+              </button>
+            </div>
+          </article>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function removeFavorite(id) {
+      favoritesList = favoritesList.filter(f => f.id !== id);
+      saveFavoritesToStorage();
+      updateFavButtonState();
+      renderFavoritesView();
+    }
+
+    function clearAllFavorites() {
+      if (confirm('¿Deseas vaciar tu lista de comandos favoritos guardados en este navegador?')) {
+        favoritesList = [];
+        saveFavoritesToStorage();
+        updateFavButtonState();
+        renderFavoritesView();
+      }
+    }
+
+    function copySnippetText(btn, codeText) {
+      const label = btn.querySelector('.btn-copy-label');
+      const oldText = label.textContent;
+
+      navigator.clipboard.writeText(codeText).then(() => {
+        label.textContent = '¡Copiado!';
+        setTimeout(() => { label.textContent = oldText; }, 1800);
+      }).catch(() => {
+        label.textContent = '¡Copiado!';
+        setTimeout(() => { label.textContent = oldText; }, 1800);
+      });
+    }
+
+    function loadSnippetIntoGenerator(recipeId, branch, remote, message) {
+      switchTab('generator');
+      selectRecipe(recipeId);
+      if (branch) document.getElementById('input-branch').value = branch;
+      if (remote) document.getElementById('input-remote').value = remote;
+      if (message) document.getElementById('input-message').value = message;
+      updateCommandOutput();
+    }
+
+    function exportFavoritesScript() {
+      if (favoritesList.length === 0) {
+        alert('No tienes comandos favoritos para exportar.');
+        return;
+      }
+      let content = '#!/usr/bin/env bash\n# GitFast - Comandos Favoritos de Rescate\n# Grupo [32] - IA Generativa\n\n';
+      favoritesList.forEach((fav, i) => {
+        content += `### [${i + 1}] ${fav.title}\n`;
+        content += `# ${fav.explanation}\n`;
+        content += `${fav.code}\n\n`;
+      });
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gitfast-favoritos-grupo32.sh';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

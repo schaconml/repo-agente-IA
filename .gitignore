@@ -33,6 +33,11 @@ venv/
 .venv/
 ENV/
 
+# Documentación interna de desarrollo (archivos netamente de desarrollo, no
+# forman parte del código fuente desplegado)
+DOCSDEV/
+SKILLS/
+
 # IDE & OS
 .DS_Store
 Thumbs.db

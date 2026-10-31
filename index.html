@@ -98,6 +98,11 @@
       color: #8ed5ff !important;
       font-weight: 600;
     }
+    /* FASE 0: las vistas reciben foco programático al cambiar de pestaña,
+       se oculta el outline para no duplicar el anillo visual del shell */
+    .tab-content:focus {
+      outline: none;
+    }
   </style>
 </head>
 
@@ -128,7 +133,7 @@
           <span>100% Offline • Cero APIs Privadas</span>
         </div>
 
-        <button onclick="switchTab('about')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs text-on-surface transition-colors cursor-pointer border border-outline-variant/40" title="Ver integrantes del equipo">
+        <button id="btn-team" onclick="switchTab('about')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs text-on-surface transition-colors cursor-pointer border border-outline-variant/40" title="Ver integrantes del equipo">
           <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
           <span class="font-medium">Equipo</span>
         </button>
@@ -180,7 +185,7 @@
     <!-- ========================================== -->
     <!-- VISTA 1: GENERADOR DE COMANDOS (3 COLUMNAS) -->
     <!-- ========================================== -->
-    <section id="view-generator" class="tab-content active">
+    <section id="view-generator" tabindex="-1" class="tab-content active">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
         <!-- COLUMNA 1: SELECTOR DE CASOS DE USO (4 Cols Desktop) -->
@@ -397,7 +402,7 @@
     <!-- ========================================== -->
     <!-- VISTA 2: FAVORITOS & SNIPPETS GUARDADOS    -->
     <!-- ========================================== -->
-    <section id="view-favorites" class="tab-content">
+    <section id="view-favorites" tabindex="-1" class="tab-content">
       <div class="flex flex-col gap-6 max-w-5xl mx-auto">
         <!-- Banner Superior de Favoritos -->
         <div class="bg-surface-container rounded-xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-outline-variant/20 shadow-lg">
@@ -449,7 +454,7 @@
     <!-- ========================================== -->
     <!-- VISTA 3: GUÍA DE RESCATE Y EMERGENCIAS     -->
     <!-- ========================================== -->
-    <section id="view-emergency" class="tab-content">
+    <section id="view-emergency" tabindex="-1" class="tab-content">
       <div class="flex flex-col gap-6 max-w-5xl mx-auto">
         <!-- Banner de Guía -->
         <div class="bg-surface-container-low p-5 sm:p-6 rounded-xl flex flex-col gap-2 border border-outline-variant/20 shadow-md">
@@ -543,7 +548,7 @@
     <!-- ========================================== -->
     <!-- VISTA 4: ACERCA DE / EQUIPO GRUPO 32       -->
     <!-- ========================================== -->
-    <section id="view-about" class="tab-content">
+    <section id="view-about" tabindex="-1" class="tab-content">
       <div class="flex flex-col gap-6 max-w-4xl mx-auto">
         <div class="bg-surface-container rounded-xl p-6 sm:p-8 flex flex-col gap-5 border border-outline-variant/20 shadow-xl">
           <div class="flex items-center gap-3">
@@ -881,6 +886,88 @@
     let favoritesList = [];
 
     // ----------------------------------------------------
+    // FASE 0 · NAVEGACIÓN ENTRE VISTAS + RUTAS HASH
+    // Única fuente de verdad del "cascarón" de las 4 pantallas.
+    // Contrato documentado en SKILLS/AGENTS.md §3.
+    // ----------------------------------------------------
+    const VIEWS = {
+      generator: { sectionId: 'view-generator', tabBtnId: 'tab-btn-generator', route: '#/generador' },
+      favorites: { sectionId: 'view-favorites', tabBtnId: 'tab-btn-favorites', route: '#/favoritos' },
+      emergency: { sectionId: 'view-emergency', tabBtnId: 'tab-btn-emergency', route: '#/rescate' },
+      about:     { sectionId: 'view-about',     tabBtnId: null,               route: '#/equipo' }
+    };
+
+    const NAV_ACTIVE_CLASSES = 'nav-tab active px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-surface-container-high text-primary border-b-2 border-primary';
+    const NAV_IDLE_CLASSES   = 'nav-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container';
+
+    let currentView = null;
+
+    function switchTab(viewId, options = {}) {
+      const { updateHash = true, focusSection = true } = options;
+      const view = VIEWS[viewId];
+      if (!view) return;
+
+      const section = document.getElementById(view.sectionId);
+      if (!section) return;
+
+      // Idempotencia: si la vista ya está activa, solo se alinea la URL.
+      if (currentView === viewId) {
+        if (updateHash && location.hash !== view.route) location.hash = view.route;
+        return;
+      }
+
+      currentView = viewId;
+
+      // 1. Mostrar únicamente la vista objetivo
+      document.querySelectorAll('.tab-content').forEach((el) => el.classList.remove('active'));
+      section.classList.add('active');
+
+      // 2. Estado visual y de accesibilidad de la barra de pestañas
+      document.querySelectorAll('#main-navigation .nav-tab').forEach((btn) => {
+        const isActive = !!view.tabBtnId && btn.id === view.tabBtnId;
+        btn.className = isActive ? NAV_ACTIVE_CLASSES : NAV_IDLE_CLASSES;
+        if (isActive) btn.setAttribute('aria-current', 'page');
+        else btn.removeAttribute('aria-current');
+      });
+
+      // Resaltar el botón "Equipo" del encabezado cuando la vista About está activa
+      const teamBtn = document.getElementById('btn-team');
+      if (teamBtn) teamBtn.classList.toggle('text-primary', viewId === 'about');
+
+      // 3. Datos frescos al entrar a la vista
+      updateFavBadgeCount();
+      if (viewId === 'favorites') renderFavoritesView();
+      if (viewId === 'generator') {
+        updateCommandOutput();
+        updateFavButtonState();
+      }
+
+      // 4. Accesibilidad (foco en la vista) y scroll limpio al cambiar
+      section.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+
+      // 5. Deep-link compartible (#/generador, #/favoritos, #/rescate, #/equipo)
+      if (updateHash && location.hash !== view.route) location.hash = view.route;
+    }
+
+    function applyRouteFromHash(options = {}) {
+      const { restore = false } = options;
+      const hash = (window.location.hash || '').toLowerCase();
+
+      for (const viewId of Object.keys(VIEWS)) {
+        if (hash === VIEWS[viewId].route) {
+          switchTab(viewId, { updateHash: false, focusSection: !restore });
+          return;
+        }
+      }
+
+      // Ruta vacía o desconocida: Generador por defecto, normalizando la URL
+      // con replaceState para no crear una entrada extra en el historial.
+      history.replaceState(null, '', '#/generador');
+      switchTab('generator', { updateHash: false, focusSection: !restore });
+    }
+
+    // ----------------------------------------------------
     // INICIALIZACIÓN AL CARGAR LA PÁGINA
     // ----------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
@@ -888,6 +975,10 @@
       renderRecipesCatalog();
       selectRecipe(GIT_RECIPES[0].id);
       renderFavoritesView();
+
+      // FASE 0: rutas compartibles + sincronización con botones atrás/adelante
+      window.addEventListener('hashchange', applyRouteFromHash);
+      applyRouteFromHash({ restore: true });
 
       // Atajos de teclado rápidos
       document.addEventListener('keydown', (e) => {

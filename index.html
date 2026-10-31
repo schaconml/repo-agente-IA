@@ -273,8 +273,9 @@
                   <span id="char-counter" class="text-[10px] font-code text-outline">55 caracteres</span>
                 </div>
                 <textarea id="input-message" rows="2" oninput="updateCommandOutput()" placeholder="feat: descripción concisa del cambio" class="w-full px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-code text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-outline-variant/30 resize-none">feat: implementación de las 4 funciones según PRD</textarea>
-                <div class="flex items-center gap-1 text-[11px] text-on-surface-variant">
+                <div class="flex items-center gap-1 text-[11px] text-on-surface-variant flex-wrap">
                   <span class="text-primary font-code">feat:</span> nueva función | <span class="text-secondary font-code">fix:</span> corrección | <span class="text-tertiary font-code">docs:</span> documentación
+                  <span>· símbolos especiales (" ` \ $) se escapan solos para pegar seguro</span>
                 </div>
               </div>
 
@@ -980,6 +981,28 @@
       window.addEventListener('hashchange', applyRouteFromHash);
       applyRouteFromHash({ restore: true });
 
+      // FASE 1: delegación de eventos en la lista dinámica de favoritos
+      // (un único listener sobrevive al re-render del innerHTML del contenedor)
+      const favoritesContainer = document.getElementById('favorites-cards-container');
+      if (favoritesContainer) {
+        favoritesContainer.addEventListener('click', (event) => {
+          const trigger = event.target.closest('[data-action]');
+          if (!trigger) return;
+
+          const action = trigger.dataset.action;
+          if (action === 'remove-fav') removeFavorite(trigger.dataset.favId);
+          if (action === 'copy-snippet') copySnippetText(trigger, trigger.dataset.code || '');
+          if (action === 'open-generator') {
+            loadSnippetIntoGenerator(
+              trigger.dataset.recipeId,
+              trigger.dataset.branch || '',
+              trigger.dataset.remote || 'origin',
+              trigger.dataset.message || ''
+            );
+          }
+        });
+      }
+
       // Atajos de teclado rápidos
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !window.getSelection().toString()) {
@@ -1016,7 +1039,7 @@
         html += `
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between px-1">
-              <span class="text-[11px] font-code font-semibold uppercase text-outline tracking-wider">${catName}</span>
+              <span class="text-[11px] font-code font-semibold uppercase text-outline tracking-wider">${escapeHtml(catName)}</span>
               <span class="px-1.5 py-0.2 rounded bg-surface-container font-code text-[10px] text-on-surface-variant">${list.length}</span>
             </div>
             <div class="flex flex-col gap-1.5">
@@ -1024,13 +1047,15 @@
 
         list.forEach(item => {
           const isActive = currentRecipe && currentRecipe.id === item.id;
+          const itemTitle = escapeHtml(item.title);
+          const itemSummary = escapeHtml(item.commandSummary);
           html += `
             <button onclick="selectRecipe('${item.id}')" type="button" class="recipe-card text-left p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-all group flex flex-col gap-1 border border-outline-variant/15 shadow-sm ${isActive ? 'active' : ''}" data-id="${item.id}">
               <div class="flex items-center justify-between w-full">
-                <span class="recipe-title text-xs sm:text-sm font-medium text-on-surface group-hover:text-primary transition-colors">${item.title}</span>
+                <span class="recipe-title text-xs sm:text-sm font-medium text-on-surface group-hover:text-primary transition-colors">${itemTitle}</span>
                 <span class="material-symbols-outlined text-[15px] text-outline group-hover:text-primary transition-colors">arrow_forward</span>
               </div>
-              <span class="font-code text-[11px] text-on-surface-variant truncate">${item.commandSummary}</span>
+              <span class="font-code text-[11px] text-on-surface-variant truncate">${itemSummary}</span>
             </button>
           `;
         });
@@ -1039,7 +1064,7 @@
       }
 
       if (totalCount === 0) {
-        html = `<div class="p-4 text-center text-xs font-code text-on-surface-variant bg-surface-container-lowest rounded-lg">No se encontraron recetas con "${filterText}".</div>`;
+        html = `<div class="p-4 text-center text-xs font-code text-on-surface-variant bg-surface-container-lowest rounded-lg">No se encontraron recetas con "${escapeHtml(filterText)}".</div>`;
       }
 
       container.innerHTML = html;
@@ -1113,6 +1138,27 @@
         .replace(/-+/g, '-');
     }
 
+    // FASE 1 · Utilidades de render seguro (contrato en SKILLS/AGENTS.md §5)
+    function escapeHtml(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // FASE 1 · Escapes válidos de bash para cadenas entre comillas dobles.
+    // El orden importa: la barra invertida primero para no duplicar escapes.
+    // Bloquea \, " , ` y $ (expansión de variables y substitución de comandos).
+    function sanitizeCommitMessage(raw) {
+      return (raw || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/`/g, '\\`')
+        .replace(/\$/g, '\\$');
+    }
+
     function onBranchInput(val) {
       const sanitized = sanitizeBranchName(val);
       const msg = document.getElementById('branch-validation-msg');
@@ -1148,7 +1194,8 @@
       const cleanBranch = sanitizeBranchName(rawBranch) || 'main';
       const cleanRemote = (document.getElementById('input-remote').value || 'origin').trim();
       const rawMsg = document.getElementById('input-message').value || 'chore: actualización';
-      const cleanMsg = rawMsg.replace(/"/g, '\\"');
+      // FASE 1: el mensaje queda siempre "pegado-seguro" entre comillas dobles de bash
+      const cleanMsg = sanitizeCommitMessage(rawMsg);
       const cleanFile = (document.getElementById('input-file').value || 'src/app.js').trim();
 
       document.getElementById('char-counter').textContent = `${cleanMsg.length} caracteres`;
@@ -1191,14 +1238,15 @@
       container.innerHTML = html;
     }
 
-    // Copiar al portapapeles con 1 toque
-    function copyGeneratedCommands() {
-      const outputElem = document.getElementById('command-output-block');
-      const textToCopy = outputElem.innerText || outputElem.textContent;
-
-      const fallbackCopy = (text) => {
+    // FASE 1 · Copiado robusto compartido: Clipboard API con fallback execCommand
+    // (necesario en file:// y contextos donde la API no está disponible)
+    function copyTextWithFallback(text, onSuccess) {
+      const fallbackCopy = (raw) => {
         const temp = document.createElement('textarea');
-        temp.value = text;
+        temp.value = raw;
+        temp.setAttribute('readonly', '');
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
         document.body.appendChild(temp);
         temp.select();
         document.execCommand('copy');
@@ -1206,14 +1254,20 @@
       };
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy).then(showCopySuccess).catch(() => {
-          fallbackCopy(textToCopy);
-          showCopySuccess();
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+          fallbackCopy(text);
+          onSuccess();
         });
       } else {
-        fallbackCopy(textToCopy);
-        showCopySuccess();
+        fallbackCopy(text);
+        onSuccess();
       }
+    }
+
+    // Copiar al portapapeles con 1 toque
+    function copyGeneratedCommands() {
+      const outputElem = document.getElementById('command-output-block');
+      copyTextWithFallback(outputElem.innerText || outputElem.textContent, showCopySuccess);
     }
 
     function showCopySuccess() {
@@ -1397,37 +1451,48 @@
 
       let html = '';
       filtered.forEach(fav => {
+        // FASE 1: datos crudos salvados tal cual; se escapan SOLO al pintar (SKILLS/AGENTS.md §5)
+        const favTitle = escapeHtml(fav.title || 'Sin título');
+        const favCategory = escapeHtml(fav.categoryLabel || 'Snippet');
+        const favCode = escapeHtml(fav.code || '');
+        const favExplanation = escapeHtml(fav.explanation || '');
+        const favIdAttr = escapeHtml(fav.id || '');
+        const favRecipeAttr = escapeHtml(fav.recipeId || '');
+        const favBranchAttr = escapeHtml(fav.branch || '');
+        const favRemoteAttr = escapeHtml(fav.remote || 'origin');
+        const favMessageAttr = escapeHtml(fav.message || '');
+
         html += `
           <article class="bg-surface-container rounded-xl p-4 sm:p-5 flex flex-col gap-3 border border-outline-variant/20 shadow-md">
             <div class="flex items-start justify-between gap-3">
               <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
-                  <span class="px-2 py-0.5 rounded text-[10px] font-code bg-primary-container/15 text-primary font-semibold uppercase">${fav.categoryLabel || 'Snippet'}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-code bg-primary-container/15 text-primary font-semibold uppercase">${favCategory}</span>
                   <span class="text-xs font-code text-outline">Guardado local</span>
                 </div>
-                <h3 class="text-sm sm:text-base font-semibold text-on-surface">${fav.title}</h3>
+                <h3 class="text-sm sm:text-base font-semibold text-on-surface">${favTitle}</h3>
               </div>
-              <button onclick="removeFavorite('${fav.id}')" type="button" class="p-1.5 rounded hover:bg-surface-container-highest text-tertiary transition-colors" title="Eliminar de favoritos">
+              <button data-action="remove-fav" data-fav-id="${favIdAttr}" type="button" class="p-1.5 rounded hover:bg-surface-container-highest text-tertiary transition-colors cursor-pointer" title="Eliminar de favoritos" aria-label="Eliminar de favoritos">
                 <span class="material-symbols-outlined text-[20px]">star</span>
               </button>
             </div>
 
             <!-- Código del Snippet -->
             <div class="bg-surface-container-lowest p-3 rounded-lg flex flex-col gap-1 font-code text-xs text-primary leading-relaxed overflow-x-auto border border-outline-variant/10">
-              <pre class="m-0 select-all whitespace-pre-wrap">${fav.code}</pre>
+              <pre class="m-0 select-all whitespace-pre-wrap">${favCode}</pre>
             </div>
 
             <!-- Explicación -->
-            <p class="text-xs text-on-surface-variant leading-relaxed">${fav.explanation}</p>
+            <p class="text-xs text-on-surface-variant leading-relaxed">${favExplanation}</p>
 
-            <!-- Acciones de la Tarjeta -->
+            <!-- Acciones de la Tarjeta (delegación de eventos, SKILLS/AGENTS.md §5.2) -->
             <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20 flex-wrap gap-2">
-              <button onclick="loadSnippetIntoGenerator('${fav.recipeId}', '${fav.branch || ''}', '${fav.remote || 'origin'}', '${fav.message || ''}')" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-code text-xs transition-colors cursor-pointer">
+              <button data-action="open-generator" data-recipe-id="${favRecipeAttr}" data-branch="${favBranchAttr}" data-remote="${favRemoteAttr}" data-message="${favMessageAttr}" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-code text-xs transition-colors cursor-pointer">
                 <span class="material-symbols-outlined text-[15px] text-primary">tune</span>
                 <span>Abrir en Generador</span>
               </button>
 
-              <button onclick="copySnippetText(this, ${JSON.stringify(fav.code)})" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary font-code text-xs font-semibold transition-all cursor-pointer shadow-sm">
+              <button data-action="copy-snippet" data-code="${favCode}" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary font-code text-xs font-semibold transition-all cursor-pointer shadow-sm">
                 <span class="material-symbols-outlined text-[15px]">content_copy</span>
                 <span class="btn-copy-label">Copiar Snippet</span>
               </button>
@@ -1457,12 +1522,9 @@
 
     function copySnippetText(btn, codeText) {
       const label = btn.querySelector('.btn-copy-label');
+      if (!label) return;
       const oldText = label.textContent;
-
-      navigator.clipboard.writeText(codeText).then(() => {
-        label.textContent = '¡Copiado!';
-        setTimeout(() => { label.textContent = oldText; }, 1800);
-      }).catch(() => {
+      copyTextWithFallback(codeText, () => {
         label.textContent = '¡Copiado!';
         setTimeout(() => { label.textContent = oldText; }, 1800);
       });

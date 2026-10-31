@@ -1019,12 +1019,12 @@
     // ----------------------------------------------------
     function renderRecipesCatalog(filterText = '') {
       const container = document.getElementById('recipes-catalog-container');
-      const search = filterText.toLowerCase().trim();
+      const search = normalizeText(filterText).trim();
 
       // Agrupar por categoría
       const categories = {};
       GIT_RECIPES.forEach(r => {
-        if (search && !r.title.toLowerCase().includes(search) && !r.desc.toLowerCase().includes(search) && !r.commandSummary.toLowerCase().includes(search)) {
+        if (search && !normalizeText(r.title).includes(search) && !normalizeText(r.desc).includes(search) && !normalizeText(r.commandSummary).includes(search)) {
           return;
         }
         if (!categories[r.category]) categories[r.category] = [];
@@ -1129,13 +1129,20 @@
     // FUNCIÓN 2: VARIABLES PERSONALIZADAS Y SANITIZACIÓN
     // ----------------------------------------------------
     function sanitizeBranchName(raw) {
-      // Reglas de git: sin espacios, sin comillas, minúsculas con guiones
+      // FASE 2 · Reglas de git-check-ref-format aplicadas con criterio didáctico:
+      // sin espacios/comillas/acentos, minúsculas con guiones, y sin las variantes
+      // inválidas de punto y barra ("..", "." o "/" inicial, "/" final, ".lock").
       return (raw || '')
         .trim()
         .toLowerCase()
         .replace(/[\s\t\n]+/g, '-')
         .replace(/[^a-z0-9\-_./]/g, '')
-        .replace(/-+/g, '-');
+        .replace(/-+/g, '-')
+        .replace(/\.{2,}/g, '.')      // ".." → "." (git rechaza puntos de más)
+        .replace(/\/{2,}/g, '/')      // "//" → "/" (componentes vacíos)
+        .replace(/^[./]+/, '')        // no inicia con "." ni "/"
+        .replace(/\/+$/, '')          // sin barra final
+        .replace(/\.lock$/i, '');     // regla real de git: no termina en .lock
     }
 
     // FASE 1 · Utilidades de render seguro (contrato en SKILLS/AGENTS.md §5)
@@ -1157,6 +1164,15 @@
         .replace(/"/g, '\\"')
         .replace(/`/g, '\\`')
         .replace(/\$/g, '\\$');
+    }
+
+    // FASE 2 · Normalización para buscadores: minúsculas sin acentos
+    // (p. ej. escribir "arbol" encuentra "árbol", "rama" encuentra "Ramas")
+    function normalizeText(text) {
+      return String(text == null ? '' : text)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
     }
 
     function onBranchInput(val) {
@@ -1381,6 +1397,9 @@
       const { vars } = getCleanVariables();
       const outputElem = document.getElementById('command-output-block');
       const currentCode = outputElem.innerText || outputElem.textContent;
+      // FASE 2: se guarda el mensaje SIN escapar (raw); al reabrir el generador
+      // lo sanitiza una sola vez. `code` sí conserva el comando ya generado.
+      const rawMessage = document.getElementById('input-message').value || '';
 
       const existingIndex = favoritesList.findIndex(f => f.recipeId === currentRecipe.id);
 
@@ -1397,7 +1416,7 @@
           explanation: currentRecipe.desc,
           branch: vars.cleanBranch,
           remote: vars.cleanRemote,
-          message: vars.cleanMsg
+          message: rawMessage
         });
       }
 
@@ -1430,11 +1449,11 @@
       const container = document.getElementById('favorites-cards-container');
       if (!container) return;
 
-      const q = (search || '').toLowerCase().trim();
+      const q = normalizeText(search).trim();
 
       const filtered = favoritesList.filter(item => {
         const matchesCat = (activeFavFilter === 'all') || (item.category === activeFavFilter);
-        const matchesQuery = !q || item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q) || item.explanation.toLowerCase().includes(q);
+        const matchesQuery = !q || normalizeText(item.title).includes(q) || normalizeText(item.code).includes(q) || normalizeText(item.explanation).includes(q);
         return matchesCat && matchesQuery;
       });
 
@@ -1531,10 +1550,14 @@
     }
 
     function loadSnippetIntoGenerator(recipeId, branch, remote, message) {
+      // FASE 2: si la receta no existe en el catálogo, no se toca el generador
+      if (!GIT_RECIPES.some(r => r.id === recipeId)) return;
+
       switchTab('generator');
       selectRecipe(recipeId);
       if (branch) document.getElementById('input-branch').value = branch;
       if (remote) document.getElementById('input-remote').value = remote;
+      // El mensaje llega RAW del favorito; lo sanitiza una sola vez al generar
       if (message) document.getElementById('input-message').value = message;
       updateCommandOutput();
     }

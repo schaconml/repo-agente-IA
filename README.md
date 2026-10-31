@@ -1,6 +1,7 @@
 # GitFast · Asistente Generador de Comandos Git
 
 [![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-brightgreen?style=flat&logo=github)](https://schaconml.github.io/repo-agente-IA/)
+[![Versión](https://img.shields.io/badge/Versi%C3%B3n-v1.0-info?style=flat)](https://github.com/schaconml/repo-agente-IA/releases/tag/v1.0)
 [![Licencia](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Grupo](https://img.shields.io/badge/Grupo-32-orange.svg)](#integrantes)
 
@@ -45,6 +46,7 @@ Un estudiante de Ingeniería de Sistemas que funge como responsable de la integr
 4. **Marcar comandos generados en una lista de "Favoritos" persistente:**
    - Guardado en la memoria del navegador (`localStorage`) para que nunca se pierdan al cerrar la pestaña.
    - Vista dedicada de favoritos con filtros, botón de reapertura en el generador y opción para exportar a un script ejecutable `.sh`.
+   - **Compartir favoritos por enlace:** un botón copia una URL que lleva tu lista codificada en el hash; quien la abra importa los favoritos con deduplicación automática (sin servidor y sin cuentas).
 
 ---
 
@@ -55,11 +57,29 @@ Un estudiante de Ingeniería de Sistemas que funge como responsable de la integr
 
 ---
 
+<!-- TODO(entrega): DESCOMENTAR este bloque cuando docs/img/ tenga las 5 capturas
+     con estos nombres EXACTOS. Instrucciones de captura: DOCSDEV/entrega-v1.0.md §Capturas.
+     Tema de las capturas de escritorio: oscuro; la de móvil: clara (muestra ambos temas
+     en un solo lote). Después borrar este TODO y verificar las imágenes en GitHub.
+## 📸 Pantallazos de la Aplicación
+
+### Escritorio (≥1280 px)
+![Vista Generador de Comandos](docs/img/generador-desktop.png)
+![Vista Favoritos](docs/img/favoritos-desktop.png)
+![Vista Guía de Rescate](docs/img/rescate-desktop.png)
+![Vista Acerca de / Equipo](docs/img/equipo-desktop.png)
+
+### Móvil (~390 px)
+![Vista Generador en móvil (tema claro)](docs/img/vista-movil.png)
+-->
+
+---
+
 ## 📱 Acceso Móvil y de Escritorio
 La aplicación fue diseñada siguiendo principios *mobile-first* y *developer-precision*:
 * Compatible con navegadores móviles (Chrome, Safari, Firefox, Edge en iOS y Android).
 * Pestañas desplazables al tacto y botones amplios de toque fácil (mínimo 44px).
-* Modo oscuro de alto contraste que reduce la fatiga visual en noches de laboratorio.
+* Tema claro/oscuro conmutable desde el encabezado: el modo oscuro (por defecto) de alto contraste reduce la fatiga visual en noches de laboratorio, y la elección se recuerda en el navegador.
 
 ---
 
@@ -70,3 +90,4 @@ Si deseas ejecutar la aplicación en tu máquina local sin conexión a internet:
    git clone https://github.com/schaconml/repo-agente-IA.git
    ```
 2. Abre el archivo `index.html` en cualquier navegador web moderno (haz doble clic sobre el archivo). ¡Listo!
+3. Funciona **de verdad sin conexión**: el CSS compilado, las fuentes y los íconos viven dentro del propio repositorio (cero solicitudes a CDNs de terceros).

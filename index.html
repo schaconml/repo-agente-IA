@@ -6,104 +6,20 @@
   <meta content="web_standard" name="shell-type"/>
   <title>GitFast - Generador de Comandos Git | Grupo 32</title>
 
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <!-- FASE 3.1 · CSS vendido (0 CDNs): tailwind compilado + @font-face locales + tokens.
+       Si se añaden clases nuevas, regenerar: npx -y tailwindcss@3.4.17 -c tailwind.config.js -i assets/css/input.css -o assets/css/.tailwind.tmp.css --minify -->
+  <link href="assets/css/styles.css" rel="stylesheet"/>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "surface": "#0f131c",
-            "surface-dim": "#0f131c",
-            "surface-bright": "#353942",
-            "surface-container-lowest": "#0a0e16",
-            "surface-container-low": "#181c24",
-            "surface-container": "#1c2028",
-            "surface-container-high": "#262a33",
-            "surface-container-highest": "#31353e",
-            "on-surface": "#dfe2ee",
-            "on-surface-variant": "#bdc8d1",
-            "inverse-surface": "#dfe2ee",
-            "inverse-on-surface": "#2c3039",
-            "outline": "#87929a",
-            "outline-variant": "#3e484f",
-            "surface-tint": "#7bd0ff",
-            "primary": "#8ed5ff",
-            "on-primary": "#00354a",
-            "primary-container": "#38bdf8",
-            "on-primary-container": "#004965",
-            "secondary": "#4edea3",
-            "on-secondary": "#003824",
-            "secondary-container": "#00a572",
-            "on-secondary-container": "#00311f",
-            "tertiary": "#ffc174",
-            "on-tertiary": "#472a00",
-            "tertiary-container": "#f59e0b",
-            "on-tertiary-container": "#613b00",
-            "error": "#ffb4ab",
-            "on-error": "#690005",
-            "error-container": "#93000a",
-            "on-error-container": "#ffdad6",
-            "background": "#0f131c",
-            "on-background": "#dfe2ee"
-          },
-          fontFamily: {
-            "body": ["Geist", "system-ui", "sans-serif"],
-            "code": ["JetBrains Mono", "monospace"]
-          }
-        }
-      }
-    };
+  <!-- FASE 3.3 · Tema aplicado antes del primer render (sin flash de tema) -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('gitfast_theme_v1');
+        var wantsLight = saved ? saved === 'light' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+        if (wantsLight) document.documentElement.classList.add('light');
+      } catch (e) { /* localStorage bloqueado: se mantiene el tema oscuro por defecto */ }
+    })();
   </script>
-
-  <style>
-    body {
-      font-family: 'Geist', system-ui, -apple-system, sans-serif;
-    }
-    code, pre, .font-code {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0f131c;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #262a33;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #38bdf8;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .recipe-card.active {
-      background-color: #262a33 !important;
-      border-left: 3px solid #38bdf8;
-    }
-    .recipe-card.active .recipe-title {
-      color: #8ed5ff !important;
-      font-weight: 600;
-    }
-    /* FASE 0: las vistas reciben foco programático al cambiar de pestaña,
-       se oculta el outline para no duplicar el anillo visual del shell */
-    .tab-content:focus {
-      outline: none;
-    }
-  </style>
 </head>
 
 <body class="bg-background text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
@@ -136,6 +52,10 @@
         <button id="btn-team" onclick="switchTab('about')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-xs text-on-surface transition-colors cursor-pointer border border-outline-variant/40" title="Ver integrantes del equipo">
           <span class="material-symbols-outlined text-[16px] text-primary">groups</span>
           <span class="font-medium">Equipo</span>
+        </button>
+
+        <button id="btn-theme" onclick="toggleTheme()" type="button" class="p-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface transition-colors cursor-pointer border border-outline-variant/40" title="Cambiar entre tema oscuro y claro" aria-label="Cambiar entre tema oscuro y claro">
+          <span id="theme-icon" class="material-symbols-outlined text-[16px] text-tertiary">light_mode</span>
         </button>
       </div>
     </div>
@@ -423,6 +343,10 @@
               <span class="material-symbols-outlined text-[16px] text-tertiary">download</span>
               <span>Exportar .sh</span>
             </button>
+            <button id="btn-share-favorites" onclick="copyFavoritesShareLink()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-code transition-colors cursor-pointer" title="Copiar un enlace que contiene tus favoritos para importarlos en otro navegador">
+              <span class="material-symbols-outlined text-[16px] text-primary">link</span>
+              <span>Compartir enlace</span>
+            </button>
             <button onclick="clearAllFavorites()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-low hover:bg-error-container/20 text-error text-xs font-code transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
               <span>Limpiar Todos</span>
@@ -444,6 +368,9 @@
             <button onclick="setFavoriteFilter('rescate')" class="fav-filter-chip px-3 py-1.5 rounded-lg text-xs font-code text-on-surface-variant hover:text-on-surface bg-surface-container-low" data-cat="rescate">Rescate</button>
           </div>
         </div>
+
+        <!-- FASE 3.4: estado de importación vía enlace compartido (se muestra 6 s) -->
+        <div id="fav-import-status" class="hidden bg-primary-container/15 border border-primary/30 px-4 py-3 rounded-lg font-code text-xs text-primary" role="status" aria-live="polite"></div>
 
         <!-- Lista de Tarjetas de Favoritos -->
         <div class="flex flex-col gap-4" id="favorites-cards-container">
@@ -607,6 +534,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <span class="font-semibold text-on-surface">GitFast</span>
+        <span class="rounded-full bg-surface-container-high font-code text-[10px] px-2 py-0.5" title="Versión del entregable">v1.0</span>
         <span>•</span>
         <span>Asistente de Control de Versiones Estudiantil</span>
       </div>
@@ -953,11 +881,15 @@
 
     function applyRouteFromHash(options = {}) {
       const { restore = false } = options;
-      const hash = (window.location.hash || '').toLowerCase();
+      const rawHash = window.location.hash || '';
+      // FASE 3.4: la ruta puede llevar parámetros (#/favoritos?v=<payload>);
+      // la comparación se hace sobre la porción de ruta, sin destruir mayúsculas/-
+      const hashRoute = rawHash.toLowerCase().split('?')[0];
 
       for (const viewId of Object.keys(VIEWS)) {
-        if (hash === VIEWS[viewId].route) {
+        if (hashRoute === VIEWS[viewId].route) {
           switchTab(viewId, { updateHash: false, focusSection: !restore });
+          if (viewId === 'favorites') maybeImportSharedFromHash(rawHash);
           return;
         }
       }
@@ -966,6 +898,173 @@
       // con replaceState para no crear una entrada extra en el historial.
       history.replaceState(null, '', '#/generador');
       switchTab('generator', { updateHash: false, focusSection: !restore });
+    }
+
+    // ----------------------------------------------------
+    // FASE 3.3 · TEMA CLARO/OSCURO
+    // Tokens: assets/css/styles.css (:root = oscuro, html.light = claro).
+    // Preferencia persistida en localStorage; si nunca se eligió, se sigue
+    // la preferencia del sistema y, si no hay ninguna, el PRD manda oscuro.
+    // ----------------------------------------------------
+    const THEME_STORAGE_KEY = 'gitfast_theme_v1';
+
+    function applyTheme(mode, persist = false) {
+      const isLight = mode === 'light';
+      document.documentElement.classList.toggle('light', isLight);
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.textContent = isLight ? 'dark_mode' : 'light_mode';
+      if (persist) {
+        try { localStorage.setItem(THEME_STORAGE_KEY, mode); } catch (e) { /* contexto con almacenamiento bloqueado */ }
+      }
+    }
+
+    function syncThemeFromEnvironment() {
+      let mode = 'dark';
+      try {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        if (saved === 'light' || saved === 'dark') {
+          mode = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          mode = 'light';
+        }
+      } catch (e) { /* localStorage bloqueado */ }
+      // La clase ya la colocó el script del <head> (sin flash); aquí solo sincronizamos el ícono
+      applyTheme(mode, false);
+    }
+
+    function toggleTheme() {
+      const isLight = document.documentElement.classList.contains('light');
+      applyTheme(isLight ? 'dark' : 'light', true);
+    }
+
+    // ----------------------------------------------------
+    // FASE 3.4 · COMPARTIR FAVORITOS POR URL (100% sin servidor)
+    // Formato del enlace: #/favoritos?v=<base64url de {v:1, items:[...]}>
+    // La importación TODAVÍA pasa por escapeHtml al pintar (SKILLS/AGENTS.md §5),
+    // por lo que un enlace malicioso no puede inyectar HTML.
+    // ----------------------------------------------------
+    const SHARE_FORMAT_VERSION = 1;
+    const SHARE_MAX_ITEMS = 50;
+
+    function toBase64Url(text) {
+      const bytes = new TextEncoder().encode(text);
+      let binary = '';
+      bytes.forEach((b) => { binary += String.fromCharCode(b); });
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function fromBase64Url(encoded) {
+      let base64 = String(encoded).replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4 !== 0) base64 += '=';
+      const binary = atob(base64);
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    function clip(value, max) {
+      return typeof value === 'string' ? value.slice(0, max) : '';
+    }
+
+    function buildSharePayload() {
+      return {
+        v: SHARE_FORMAT_VERSION,
+        items: favoritesList.slice(0, SHARE_MAX_ITEMS).map((fav) => ({
+          title: clip(fav.title, 160),
+          recipeId: clip(fav.recipeId, 60),
+          category: clip(fav.category, 40) || 'general',
+          categoryLabel: clip(fav.categoryLabel, 60) || 'Snippet',
+          code: clip(fav.code, 3000),
+          explanation: clip(fav.explanation, 400),
+          branch: clip(fav.branch, 120),
+          remote: clip(fav.remote, 60),
+          message: clip(fav.message, 500)
+        }))
+      };
+    }
+
+    function showFavoritesShareStatus(message) {
+      const box = document.getElementById('fav-import-status');
+      if (!box) return;
+      box.textContent = message;
+      box.classList.remove('hidden');
+      clearTimeout(showFavoritesShareStatus._timer);
+      showFavoritesShareStatus._timer = setTimeout(() => box.classList.add('hidden'), 6000);
+    }
+
+    function copyFavoritesShareLink() {
+      if (favoritesList.length === 0) {
+        showFavoritesShareStatus('No hay favoritos que compartir: guarda comandos con la estrella del Generador.');
+        return;
+      }
+      const shareUrl = location.origin + location.pathname + location.search + '#/favoritos?v=' + toBase64Url(JSON.stringify(buildSharePayload()));
+      copyTextWithFallback(shareUrl, () => {
+        showFavoritesShareStatus(`Enlace copiado con ${Math.min(favoritesList.length, SHARE_MAX_ITEMS)} favorito(s). Pégalo en el chat del equipo: quien lo abra los importa automáticamente.`);
+      });
+    }
+
+    function importSharedFavorites(encoded) {
+      let imported = 0;
+      let skipped = 0;
+      let ok = false;
+
+      try {
+        const payload = JSON.parse(fromBase64Url(encoded));
+        if (payload && payload.v === SHARE_FORMAT_VERSION && Array.isArray(payload.items)) {
+          ok = true;
+          payload.items.forEach((item) => {
+            const code = clip(item && item.code, 3000);
+            const title = clip(item && item.title, 160);
+            if (!code.trim() || !title) { skipped++; return; }
+            const recipeId = clip(item.recipeId, 60) || 'general';
+            // Un favorito por receta: los duplicados del destinatario se mantienen
+            if (favoritesList.some((f) => f.recipeId === recipeId)) { skipped++; return; }
+            favoritesList.push({
+              id: 'fav-' + Date.now() + '-' + imported + '-' + Math.floor(Math.random() * 9000),
+              recipeId,
+              title,
+              category: clip(item.category, 40) || 'general',
+              categoryLabel: clip(item.categoryLabel, 60) || 'Snippet',
+              code,
+              explanation: clip(item.explanation, 400),
+              branch: clip(item.branch, 120),
+              remote: clip(item.remote, 60) || 'origin',
+              message: clip(item.message, 500)
+            });
+            imported++;
+          });
+        }
+      } catch (e) {
+        ok = false;
+      }
+
+      if (ok && imported > 0) {
+        saveFavoritesToStorage();
+        renderFavoritesView();
+        updateFavButtonState();
+      }
+      return ok ? { imported, skipped } : null;
+    }
+
+    function maybeImportSharedFromHash(rawHash) {
+      const queryIndex = rawHash.indexOf('?');
+      if (queryIndex === -1) return;
+      const params = new URLSearchParams(rawHash.slice(queryIndex + 1));
+      const encoded = params.get('v');
+      if (!encoded) return;
+
+      const result = importSharedFavorites(encoded);
+      if (result === null) {
+        showFavoritesShareStatus('El enlace compartido no es válido o llegó incompleto.');
+      } else if (result.imported === 0 && result.skipped === 0) {
+        showFavoritesShareStatus('El enlace compartido llegó vacío.');
+      } else {
+        const parts = [];
+        if (result.imported > 0) parts.push(`Importados ${result.imported} favorito(s) compartidos`);
+        if (result.skipped > 0) parts.push(`${result.skipped} omitido(s) por duplicado o inválidos`);
+        showFavoritesShareStatus(parts.join(' · ') + '.');
+      }
+      // Normaliza la URL (#/favoritos limpio) para no reimportar al recargar
+      history.replaceState(null, '', location.pathname + location.search + '#/favoritos');
     }
 
     // ----------------------------------------------------
@@ -980,6 +1079,9 @@
       // FASE 0: rutas compartibles + sincronización con botones atrás/adelante
       window.addEventListener('hashchange', applyRouteFromHash);
       applyRouteFromHash({ restore: true });
+
+      // FASE 3.3: sincronizar el ícono del toggle con el tema ya aplicado por el <head>
+      syncThemeFromEnvironment();
 
       // FASE 1: delegación de eventos en la lista dinámica de favoritos
       // (un único listener sobrevive al re-render del innerHTML del contenedor)

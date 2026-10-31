@@ -1,0 +1,4 @@
+/* FASE 3.1 · Entrada de compilación de Tailwind (regenerar tras añadir clases nuevas) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

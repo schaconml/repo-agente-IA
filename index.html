@@ -1336,7 +1336,18 @@
     function updateCommandOutput() {
       if (!currentRecipe) return;
       const { vars, flags } = getCleanVariables();
-      const lines = currentRecipe.generate(vars, flags);
+      // FASE 1 / SKILLS/AGENTS.md §5.1: todo valor dinámico pintado con innerHTML
+      // pasa por escapeHtml(). Sin esto, escribir `<img src=x onerror=...>` en el
+      // campo "Remoto" o "Archivo" lo ejecutaba como HTML (XSS). Los valores CRUDOS
+      // se conservan aparte: los favoritos guardan el texto sin escapar y lo
+      // sanitizan una sola vez al reabrir (Fase 2).
+      const safeVars = {
+        cleanBranch: escapeHtml(vars.cleanBranch),
+        cleanRemote: escapeHtml(vars.cleanRemote),
+        cleanMsg: escapeHtml(vars.cleanMsg),
+        cleanFile: escapeHtml(vars.cleanFile)
+      };
+      const lines = currentRecipe.generate(safeVars, flags);
       document.getElementById('command-output-block').innerHTML = lines.join('\n');
     }
 
@@ -1353,8 +1364,8 @@
           <div class="flex items-start gap-2 p-2 rounded bg-surface-container-lowest border border-outline-variant/15">
             <span class="w-4 h-4 rounded-full bg-surface-container-high text-primary font-code text-[10px] flex items-center justify-center shrink-0 mt-0.5">${i + 1}</span>
             <div class="flex flex-col gap-0.5">
-              <code class="font-code text-[11px] text-primary font-semibold">${s.cmd}</code>
-              <p class="text-[11px] text-on-surface-variant leading-tight">${s.why}</p>
+              <code class="font-code text-[11px] text-primary font-semibold">${escapeHtml(s.cmd)}</code>
+              <p class="text-[11px] text-on-surface-variant leading-tight">${escapeHtml(s.why)}</p>
             </div>
           </div>
         `;

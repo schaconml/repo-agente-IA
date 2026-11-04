@@ -71,7 +71,7 @@
         <button onclick="switchTab('favorites')" id="tab-btn-favorites" class="nav-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
           <span class="material-symbols-outlined text-[16px] text-tertiary">star</span>
           <span>Favoritos</span>
-          <span id="fav-badge-count" class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-container-highest text-tertiary font-code">0</span>
+          <span id="fav-badge-count" class="px-1.5 py-0.5 rounded-full text-[10px] bg-surface-container-highest text-tertiary font-code">0</span>
         </button>
 
         <button onclick="switchTab('emergency')" id="tab-btn-emergency" class="nav-tab px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container">
@@ -288,7 +288,7 @@
                 </button>
 
                 <!-- Botón de Favorito -->
-                <button onclick="toggleCurrentFavorite()" id="btn-toggle-fav" type="button" title="Marcar como favorito" class="px-3 py-3 sm:py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <button onclick="toggleCurrentFavorite()" id="btn-toggle-fav" type="button" title="Marcar como favorito" class="px-3 py-3 sm:py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-[18px] text-tertiary" id="fav-btn-icon">star_border</span>
                   <span id="fav-btn-text" class="hidden sm:inline">Guardar</span>
                 </button>
@@ -339,11 +339,11 @@
 
           <!-- Botones de Acción de Favoritos -->
           <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            <button onclick="exportFavoritesScript()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-code transition-colors cursor-pointer">
+            <button onclick="exportFavoritesScript()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-code transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-[16px] text-tertiary">download</span>
               <span>Exportar .sh</span>
             </button>
-            <button id="btn-share-favorites" onclick="copyFavoritesShareLink()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface text-xs font-code transition-colors cursor-pointer" title="Copiar un enlace que contiene tus favoritos para importarlos en otro navegador">
+            <button id="btn-share-favorites" onclick="copyFavoritesShareLink()" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-code transition-colors cursor-pointer" title="Copiar un enlace que contiene tus favoritos para importarlos en otro navegador">
               <span class="material-symbols-outlined text-[16px] text-primary">link</span>
               <span>Compartir enlace</span>
             </button>
@@ -581,7 +581,7 @@
           list.push('<span class="text-secondary">git add .</span>');
           list.push(`<span class="text-on-surface">git commit -m</span> <span class="text-tertiary">"${v.cleanMsg}"</span>`);
           let push = `<span class="text-primary font-semibold">git push</span>`;
-          if (f.upstream) push += ` <span class="text-primary-container font-semibold">-u</span>`;
+          if (f.upstream) push += ` <span class="text-secondary font-semibold">-u</span>`;
           if (f.forceLease) push += ` <span class="text-tertiary font-semibold">--force-with-lease</span>`;
           push += ` <span class="text-on-surface">${v.cleanRemote}</span> <span class="text-primary font-semibold">${v.cleanBranch}</span>`;
           list.push(push);
@@ -1148,7 +1148,7 @@
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between px-1">
               <span class="text-[11px] font-code font-semibold uppercase text-outline tracking-wider">${escapeHtml(catName)}</span>
-              <span class="px-1.5 py-0.2 rounded bg-surface-container font-code text-[10px] text-on-surface-variant">${list.length}</span>
+              <span class="px-1.5 py-0.5 rounded bg-surface-container font-code text-[10px] text-on-surface-variant">${list.length}</span>
             </div>
             <div class="flex flex-col gap-1.5">
         `;
@@ -1614,7 +1614,7 @@
 
             <!-- Acciones de la Tarjeta (delegación de eventos, SKILLS/AGENTS.md §5.2) -->
             <div class="flex items-center justify-between pt-1 border-t border-outline-variant/20 flex-wrap gap-2">
-              <button data-action="open-generator" data-recipe-id="${favRecipeAttr}" data-branch="${favBranchAttr}" data-remote="${favRemoteAttr}" data-message="${favMessageAttr}" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-code text-xs transition-colors cursor-pointer">
+              <button data-action="open-generator" data-recipe-id="${favRecipeAttr}" data-branch="${favBranchAttr}" data-remote="${favRemoteAttr}" data-message="${favMessageAttr}" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high hover:bg-surface-bright text-on-surface font-code text-xs transition-colors cursor-pointer">
                 <span class="material-symbols-outlined text-[15px] text-primary">tune</span>
                 <span>Abrir en Generador</span>
               </button>

@@ -57,10 +57,6 @@ Un estudiante de Ingeniería de Sistemas que funge como responsable de la integr
 
 ---
 
-<!-- TODO(entrega): DESCOMENTAR este bloque cuando docs/img/ tenga las 5 capturas
-     con estos nombres EXACTOS. Instrucciones de captura: DOCSDEV/entrega-v1.0.md §Capturas.
-     Tema de las capturas de escritorio: oscuro; la de móvil: clara (muestra ambos temas
-     en un solo lote). Después borrar este TODO y verificar las imágenes en GitHub.
 ## 📸 Pantallazos de la Aplicación
 
 ### Escritorio (≥1280 px)
@@ -71,7 +67,6 @@ Un estudiante de Ingeniería de Sistemas que funge como responsable de la integr
 
 ### Móvil (~390 px)
 ![Vista Generador en móvil (tema claro)](docs/img/vista-movil.png)
--->
 
 ---
 

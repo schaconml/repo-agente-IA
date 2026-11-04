@@ -1,0 +1,9 @@
+# Placeholder para que GitHub muestre la carpeta en el arbol del repositorio.
+# Las 5 capturas reales se agregan aqui (ver DOCSDEV/entrega-v1.0.md §1):
+#   generador-desktop.png
+#   favoritos-desktop.png
+#   rescate-desktop.png
+#   equipo-desktop.png
+#   vista-movil.png
+# Activa el bloque "Pantallazos" del README con:
+#   powershell -ExecutionPolicy Bypass -File DOCSDEV/activar-pantallazos.ps1

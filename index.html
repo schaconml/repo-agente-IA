@@ -99,8 +99,10 @@
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="flex-1 w-full pt-28 sm:pt-32 pb-12 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+  <!-- CONTENIDO PRINCIPAL
+       pt-36/sm:pt-40/md:pt-44/lg:pt-40 compensan el alto real del header fijo
+       (134 px móvil · 144 px sm · 160 px md · 144 px lg): medido con QA E2E. -->
+  <main class="flex-1 w-full pt-36 sm:pt-40 md:pt-44 lg:pt-40 pb-12 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 
     <!-- ========================================== -->
     <!-- VISTA 1: GENERADOR DE COMANDOS (3 COLUMNAS) -->
@@ -279,7 +281,7 @@
             </div>
 
             <!-- Botones de Acción Rápida (Copia en 1 toque y Favorito) -->
-            <div class="bg-surface-container-low p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-outline-variant/20">
+            <div class="bg-surface-container-low p-3.5 flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-outline-variant/20">
               <div class="flex items-center gap-2 w-full sm:w-auto">
                 <!-- Botón Principal: Copiar Comando con 1 Toque -->
                 <button onclick="copyGeneratedCommands()" id="btn-copy-commands" type="button" class="flex-1 sm:flex-none px-4 py-3 sm:py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer">
@@ -288,14 +290,14 @@
                 </button>
 
                 <!-- Botón de Favorito -->
-                <button onclick="toggleCurrentFavorite()" id="btn-toggle-fav" type="button" title="Marcar como favorito" class="px-3 py-3 sm:py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                <button onclick="toggleCurrentFavorite()" id="btn-toggle-fav" type="button" title="Marcar como favorito" aria-label="Marcar como favorito" class="px-3 py-3 sm:py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
                   <span class="material-symbols-outlined text-[18px] text-tertiary" id="fav-btn-icon">star_border</span>
                   <span id="fav-btn-text" class="hidden sm:inline">Guardar</span>
                 </button>
               </div>
 
-              <!-- Indicador de Estado de Copia -->
-              <div id="copy-status-indicator" class="flex items-center gap-1.5 text-on-surface-variant font-code text-xs">
+              <!-- Indicador de Estado de Copia (envuelve a su propia línea si no cabe) -->
+              <div id="copy-status-indicator" class="flex items-center gap-1.5 text-on-surface-variant font-code text-xs ml-auto">
                 <span class="w-2 h-2 rounded-full bg-outline"></span>
                 <span>Listo para copiar</span>
               </div>

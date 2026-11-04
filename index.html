@@ -1005,13 +1005,19 @@
     function importSharedFavorites(encoded) {
       let imported = 0;
       let skipped = 0;
+      let overflow = 0;
       let ok = false;
 
       try {
         const payload = JSON.parse(fromBase64Url(encoded));
         if (payload && payload.v === SHARE_FORMAT_VERSION && Array.isArray(payload.items)) {
           ok = true;
-          payload.items.forEach((item) => {
+          // Tope de ítems TAMBIÉN en el receptor (§4.4): el emisor ya recorta a
+          // SHARE_MAX_ITEMS, pero un enlace manipulado a mano no debe poder
+          // inyectar cientos de favoritos en el navegador de quien lo abre.
+          const items = payload.items.slice(0, SHARE_MAX_ITEMS);
+          overflow = payload.items.length - items.length;
+          items.forEach((item) => {
             const code = clip(item && item.code, 3000);
             const title = clip(item && item.title, 160);
             if (!code.trim() || !title) { skipped++; return; }
@@ -1042,7 +1048,7 @@
         renderFavoritesView();
         updateFavButtonState();
       }
-      return ok ? { imported, skipped } : null;
+      return ok ? { imported, skipped: skipped + overflow } : null;
     }
 
     function maybeImportSharedFromHash(rawHash) {
@@ -1060,7 +1066,7 @@
       } else {
         const parts = [];
         if (result.imported > 0) parts.push(`Importados ${result.imported} favorito(s) compartidos`);
-        if (result.skipped > 0) parts.push(`${result.skipped} omitido(s) por duplicado o inválidos`);
+        if (result.skipped > 0) parts.push(`${result.skipped} omitido(s) por duplicado, inválido o fuera del límite`);
         showFavoritesShareStatus(parts.join(' · ') + '.');
       }
       // Normaliza la URL (#/favoritos limpio) para no reimportar al recargar

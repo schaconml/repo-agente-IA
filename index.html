@@ -998,10 +998,21 @@
         showFavoritesShareStatus('No hay favoritos que compartir: guarda comandos con la estrella del Generador.');
         return;
       }
-      const shareUrl = location.origin + location.pathname + location.search + '#/favoritos?v=' + toBase64Url(JSON.stringify(buildSharePayload()));
+      const shareUrl = buildShareUrl();
       copyTextWithFallback(shareUrl, () => {
         showFavoritesShareStatus(`Enlace copiado con ${Math.min(favoritesList.length, SHARE_MAX_ITEMS)} favorito(s). Pégalo en el chat del equipo: quien lo abra los importa automáticamente.`);
       });
+    }
+
+    // QA de resistencia (D16): con la app abierta por doble clic (file://),
+    // location.origin devuelve "null" y el enlace quedaba como "null/C:/…",
+    // inservible para el compañero. En ese caso se usa la URL absoluta real.
+    function buildShareUrl() {
+      const origin = location.origin;
+      const base = (origin && origin !== 'null')
+        ? origin + location.pathname + location.search
+        : String(location.href || '').split('#')[0];
+      return base + '#/favoritos?v=' + toBase64Url(JSON.stringify(buildSharePayload()));
     }
 
     function importSharedFavorites(encoded) {
@@ -1115,10 +1126,19 @@
 
       // Atajos de teclado rápidos
       document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !window.getSelection().toString()) {
+        const target = e.target;
+        const escribiendo = !!target && (
+          target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+        );
+        // QA de resistencia (D14): si el foco está en un campo de texto,
+        // Ctrl+C debe seguir siendo la copia nativa del usuario: copiar el
+        // comando generado pisaría lo que acababa de seleccionar.
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !escribiendo && !window.getSelection().toString()) {
           copyGeneratedCommands();
         }
-        if (e.key === 'Escape') {
+        // QA de resistencia (D15): Esc solo limpia el Generador; si el usuario
+        // está en Favoritos o en la Guía de Rescate, sus variables se conservan.
+        if (e.key === 'Escape' && currentView === 'generator') {
           resetRecipeInputs();
         }
       });
@@ -1325,7 +1345,9 @@
       const cleanMsg = sanitizeCommitMessage(rawMsg);
       const cleanFile = (document.getElementById('input-file').value || 'src/app.js').trim();
 
-      document.getElementById('char-counter').textContent = `${cleanMsg.length} caracteres`;
+      // El contador refleja lo que el usuario ESCRIBIÓ (no el texto escapado):
+      // contar los escapes hacía que el número no cuadrara con el campo.
+      document.getElementById('char-counter').textContent = `${rawMsg.length} caracteres`;
 
       const flags = {
         upstream: document.getElementById('flag-upstream')?.checked || false,
@@ -1391,15 +1413,21 @@
         document.body.removeChild(temp);
       };
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
-          fallbackCopy(text);
-          onSuccess();
-        });
-      } else {
-        fallbackCopy(text);
-        onSuccess();
-      }
+      // QA de resistencia (D13): en algunos navegadores (documento sin foco,
+      // permisos revocados) writeText() puede lanzar de forma SÍNCRONA. El
+      // try/catch evita que el error llegue a la consola (DoD §9.2).
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+            fallbackCopy(text);
+            onSuccess();
+          });
+          return;
+        }
+      } catch (e) { /* se cae al fallback de abajo */ }
+
+      fallbackCopy(text);
+      onSuccess();
     }
 
     // Copiar al portapapeles con 1 toque
@@ -1470,7 +1498,17 @@
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          favoritesList = JSON.parse(stored);
+          // QA de resistencia (D9/D10): el almacenamiento del navegador puede
+          // quedar corrupto (edición manual, escritura a medias, otra versión).
+          // Si el JSON no es una lista de favoritos válidos, la app NO debe
+          // romperse: se repara con la lista semilla y se vuelve a guardar.
+          const sane = sanitizeFavoritesList(JSON.parse(stored));
+          if (sane === null) {
+            favoritesList = [...DEFAULT_FAVORITES];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(favoritesList));
+          } else {
+            favoritesList = sane;
+          }
         } else {
           favoritesList = [...DEFAULT_FAVORITES];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(favoritesList));
@@ -1479,6 +1517,34 @@
         favoritesList = [...DEFAULT_FAVORITES];
       }
       updateFavBadgeCount();
+    }
+
+    // Normaliza la lista de favoritos leída del almacenamiento.
+    // Devuelve null si el dato no es una lista (no se puede recuperar).
+    function sanitizeFavoritesList(raw) {
+      if (!Array.isArray(raw)) return null;
+      const vistos = new Set();
+      const limpios = [];
+      raw.forEach((fav) => {
+        if (!fav || typeof fav !== 'object' || Array.isArray(fav)) return;
+        const recipeId = typeof fav.recipeId === 'string' && fav.recipeId ? fav.recipeId : 'general';
+        if (vistos.has(recipeId)) return;   // un favorito por receta (§4.2)
+        vistos.add(recipeId);
+        const str = (v, def = '') => (typeof v === 'string' ? v : def);
+        limpios.push({
+          id: str(fav.id) || ('fav-' + Date.now() + '-' + Math.floor(Math.random() * 9000)),
+          recipeId: recipeId.slice(0, 60),
+          title: str(fav.title, 'Sin título').slice(0, 160),
+          category: str(fav.category, 'general').slice(0, 40),
+          categoryLabel: str(fav.categoryLabel, 'Snippet').slice(0, 60),
+          code: str(fav.code).slice(0, 3000),
+          explanation: str(fav.explanation).slice(0, 400),
+          branch: str(fav.branch).slice(0, 120),
+          remote: str(fav.remote, 'origin').slice(0, 60),
+          message: str(fav.message).slice(0, 500)
+        });
+      });
+      return limpios;
     }
 
     function saveFavoritesToStorage() {
@@ -1528,8 +1594,11 @@
       if (existingIndex >= 0) {
         favoritesList.splice(existingIndex, 1);
       } else {
+        // QA de resistencia: el sufijo aleatorio evita que dos favoritos
+        // guardados en el mismo milisegundo compartan id (al quitar uno,
+        // se borraría el otro).
         favoritesList.unshift({
-          id: 'fav-' + Date.now(),
+          id: 'fav-' + Date.now() + '-' + Math.floor(Math.random() * 9000),
           recipeId: currentRecipe.id,
           title: currentRecipe.title,
           category: currentRecipe.categoryKey || 'general',
@@ -1684,16 +1753,35 @@
       updateCommandOutput();
     }
 
+    // QA de resistencia (D11/D12): el script exportado se puede ejecutar con
+    // doble clic. Por eso SOLO puede contener órdenes de git: cualquier otra
+    // línea se comenta y los títulos/explicaciones se aplanan a una sola línea
+    // (un salto de línea en un título convertiría texto en una orden).
+    function sanitizeScriptText(text) {
+      return String(text == null ? '' : text)
+        .replace(/[\r\n\u2028\u2029]+/g, ' ')
+        .replace(/[\u0000-\u001f\u007f]/g, '')
+        .trim();
+    }
+
+    function safeScriptLines(code) {
+      return String(code == null ? '' : code)
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => (/^git(\s|$)/i.test(line) ? line : '# [omitido por seguridad] ' + line));
+    }
+
     function exportFavoritesScript() {
       if (favoritesList.length === 0) {
         alert('No tienes comandos favoritos para exportar.');
         return;
       }
-      let content = '#!/usr/bin/env bash\n# GitFast - Comandos Favoritos de Rescate\n# Grupo [32] - IA Generativa\n\n';
+      let content = '#!/usr/bin/env bash\n# GitFast - Comandos Favoritos de Rescate\n# Grupo [32] - IA Generativa\n# Modo Seguro: solo contiene comandos git. Inspecciona antes de ejecutar.\n\n';
       favoritesList.forEach((fav, i) => {
-        content += `### [${i + 1}] ${fav.title}\n`;
-        content += `# ${fav.explanation}\n`;
-        content += `${fav.code}\n\n`;
+        content += `### [${i + 1}] ${sanitizeScriptText(fav.title)}\n`;
+        content += `# ${sanitizeScriptText(fav.explanation)}\n`;
+        content += `${safeScriptLines(fav.code).join('\n')}\n\n`;
       });
 
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });

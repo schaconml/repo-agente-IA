@@ -1178,7 +1178,8 @@
       }
 
       container.innerHTML = html;
-      document.getElementById('recipe-count-badge').textContent = `${totalCount} recetas`;
+      // Singular/plural: el contador se lee en la demo y con 1 decía "1 recetas"
+      document.getElementById('recipe-count-badge').textContent = `${totalCount} ${totalCount === 1 ? 'receta' : 'recetas'}`;
     }
 
     function filterRecipes(text) {
